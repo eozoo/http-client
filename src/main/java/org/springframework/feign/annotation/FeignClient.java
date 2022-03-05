@@ -1,16 +1,11 @@
 package org.springframework.feign.annotation;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
+import feign.jackson.JacksonDecoder;
+import feign.jackson.JacksonEncoder;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.feign.NULL;
 
-import feign.codec.Decoder;
-import feign.codec.Encoder;
+import java.lang.annotation.*;
 
 /**
  * 
@@ -28,9 +23,9 @@ public @interface FeignClient {
 	@AliasFor(attribute = "value")
 	String url() default "";
 
-	Class<?> encoder() default Encoder.Default.class;
+	Class<?> encoder() default JacksonEncoder.class;
 	
-	Class<?> decoder() default Decoder.Default.class;
+	Class<?> decoder() default JacksonDecoder.class;
 	
 	Class<?> sslSocketFactory() default NULL.class;
 	

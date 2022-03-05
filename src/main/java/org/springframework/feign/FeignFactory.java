@@ -9,6 +9,7 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.feign.annotation.FeignClient;
+import org.springframework.lang.NonNull;
 import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 
@@ -32,7 +33,7 @@ public class FeignFactory<T> implements FactoryBean<T>, EmbeddedValueResolverAwa
 	private StringValueResolver valueResolver;
 
 	@Override
-	public void setEmbeddedValueResolver(StringValueResolver valueResolver) {
+	public void setEmbeddedValueResolver(@NonNull StringValueResolver valueResolver) {
 		this.valueResolver = valueResolver;
 	}
 
@@ -42,31 +43,11 @@ public class FeignFactory<T> implements FactoryBean<T>, EmbeddedValueResolverAwa
 		FeignClient feign = AnnotationUtils.getAnnotation(feignClass, FeignClient.class);
 
 		String url = valueResolver.resolveStringValue(feign.url());
-
-		int connectTimeoutMillis = feign.connectTimeoutMillis();
-		if(!StringUtils.isEmpty(feign.connectTimeoutMillisStr())){
-			connectTimeoutMillis = Integer.parseInt(feign.connectTimeoutMillisStr());
-		}
-
-		int readTimeoutMillis = feign.readTimeoutMillis();
-		if(!StringUtils.isEmpty(feign.readTimeoutMillisStr())){
-			readTimeoutMillis = Integer.parseInt(feign.readTimeoutMillisStr());
-		}
-
-		long period = feign.period();
-		if(!StringUtils.isEmpty(feign.periodStr())){
-			period = Integer.parseInt(feign.periodStr());
-		}
-
-		long maxPeriod = feign.maxPeriod();
-		if(!StringUtils.isEmpty(feign.maxPeriodStr())){
-			maxPeriod = Integer.parseInt(feign.maxPeriodStr());
-		}
-
-		int maxAttempts = feign.maxAttempts();
-		if(!StringUtils.isEmpty(feign.maxAttemptsStr())){
-			maxAttempts = Integer.parseInt(feign.maxAttemptsStr());
-		}
+		int connectTimeoutMillis = getInt(feign.connectTimeoutMillis(), feign.connectTimeoutMillisStr());
+		int readTimeoutMillis = getInt(feign.readTimeoutMillis(), feign.readTimeoutMillisStr());
+		long period = getLong(feign.period(), feign.periodStr());
+		long maxPeriod = getLong(feign.maxPeriod(), feign.maxPeriodStr());
+		int maxAttempts = getInt(feign.maxAttempts(), feign.maxAttemptsStr());
 
 		Builder builder = Feign.builder()
 				.options(new Options(connectTimeoutMillis, readTimeoutMillis)) 
@@ -91,6 +72,20 @@ public class FeignFactory<T> implements FactoryBean<T>, EmbeddedValueResolverAwa
 			}
 		}
 		return	(T)builder.target(feignClass, url);
+	}
+
+	private int getInt(int defaultValue, String regex) {
+		if(StringUtils.isEmpty(regex)){
+			return defaultValue;
+		}
+		return Integer.parseInt(valueResolver.resolveStringValue(regex));
+	}
+
+	private long getLong(long defaultValue, String regex) {
+		if(StringUtils.isEmpty(regex)){
+			return defaultValue;
+		}
+		return Long.parseLong(valueResolver.resolveStringValue(regex));
 	}
 
 	@Override
