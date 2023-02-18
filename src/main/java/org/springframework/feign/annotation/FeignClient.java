@@ -1,5 +1,6 @@
 package org.springframework.feign.annotation;
 
+import feign.Feign;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import org.springframework.core.annotation.AliasFor;
@@ -8,8 +9,8 @@ import org.springframework.feign.NULL;
 import java.lang.annotation.*;
 
 /**
- * 
- * @author shanhm1991@163.com
+ *
+ * @author shanhuiming
  *
  */
 @Target({ElementType.TYPE})
@@ -23,9 +24,13 @@ public @interface FeignClient {
 	@AliasFor(attribute = "value")
 	String url() default "";
 
+	String name() default "";
+
 	Class<?> encoder() default JacksonEncoder.class;
 	
 	Class<?> decoder() default JacksonDecoder.class;
+
+	Class<?> logger() default Feign.class;
 	
 	Class<?> sslSocketFactory() default NULL.class;
 	
@@ -35,11 +40,11 @@ public @interface FeignClient {
 	
 	String sslCertPath() default "";
 	
-	int connectTimeoutMillis() default 1000;
+	int connectTimeoutMillis() default 60000;
 	
 	String connectTimeoutMillisStr() default "";
 	
-	int readTimeoutMillis() default 1000;
+	int readTimeoutMillis() default 600000;
 	
 	String readTimeoutMillisStr() default "";
 	

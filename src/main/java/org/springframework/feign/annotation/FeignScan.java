@@ -6,8 +6,8 @@ import org.springframework.feign.FeignBeanDefinitionRegistrar;
 import java.lang.annotation.*;
 
 /**
- * 
- * @author shanhm1991@163.com
+ *
+ * @author shanhuiming
  *
  */
 @Target({ElementType.TYPE})

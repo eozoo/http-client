@@ -1,103 +1,65 @@
 package org.springframework.feign;
 
-import java.lang.reflect.Constructor;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLSocketFactory;
-
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.feign.annotation.FeignClient;
+import org.springframework.feign.invoke.FeignBuilder;
 import org.springframework.lang.NonNull;
-import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 
-import feign.Client;
-import feign.Feign;
-import feign.Feign.Builder;
-import feign.Request.Options;
-import feign.Retryer;
-import feign.codec.Decoder;
-import feign.codec.Encoder;
-
 /**
- * 
- * @author shanhm1991@163.com
+ *
+ * @author shanhuiming
  *
  */
-public class FeignFactory<T> implements FactoryBean<T>, EmbeddedValueResolverAware {
+public class FeignFactory<T> implements FactoryBean<T>, EmbeddedValueResolverAware, ApplicationContextAware {
 
-	private Class<?> feignClass;
+    private Class<T> feignClass;
 
-	private StringValueResolver valueResolver;
+    private StringValueResolver valueResolver;
 
-	@Override
-	public void setEmbeddedValueResolver(@NonNull StringValueResolver valueResolver) {
-		this.valueResolver = valueResolver;
-	}
+    private ApplicationContext applicationContext;
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public T getObject() throws Exception {
-		FeignClient feign = AnnotationUtils.getAnnotation(feignClass, FeignClient.class);
+    public FeignFactory() {
+    }
 
-		String url = valueResolver.resolveStringValue(feign.url());
-		int connectTimeoutMillis = getInt(feign.connectTimeoutMillis(), feign.connectTimeoutMillisStr());
-		int readTimeoutMillis = getInt(feign.readTimeoutMillis(), feign.readTimeoutMillisStr());
-		long period = getLong(feign.period(), feign.periodStr());
-		long maxPeriod = getLong(feign.maxPeriod(), feign.maxPeriodStr());
-		int maxAttempts = getInt(feign.maxAttempts(), feign.maxAttemptsStr());
+    public Class<T> getFeignClass() {
+        return feignClass;
+    }
 
-		Builder builder = Feign.builder()
-				.options(new Options(connectTimeoutMillis, readTimeoutMillis)) 
-				.retryer(new Retryer.Default(period, maxPeriod, maxAttempts)) 
-				.encoder((Encoder)feign.encoder().newInstance()).decoder((Decoder)feign.decoder().newInstance());
-		
-		Class<?> sslSocketFactoryClass = feign.sslSocketFactory();
-		Class<?> hostnameVerifierClass = feign.hostnameVerifier();
-		if(SSLSocketFactory.class.isAssignableFrom(sslSocketFactoryClass)){
-			SSLSocketFactory sslSocketFactory = null;
-			if(!StringUtils.isEmpty(feign.sslCertPath()) && !StringUtils.isEmpty(feign.sslPasswd())){
-				Constructor<?> constructor = sslSocketFactoryClass.getConstructor(String.class, String.class);
-				sslSocketFactory = (SSLSocketFactory)constructor.newInstance(feign.sslCertPath(), feign.sslPasswd());
-			}else{
-				sslSocketFactory = (SSLSocketFactory)sslSocketFactoryClass.newInstance();
-			}
-			
-			if(!HostnameVerifier.class.isAssignableFrom(hostnameVerifierClass)){
-				builder.client(new Client.Default(sslSocketFactory, null));
-			}else{
-				builder.client(new Client.Default(sslSocketFactory, (HostnameVerifier)hostnameVerifierClass.newInstance()));
-			}
-		}
-		return	(T)builder.target(feignClass, url);
-	}
+    public void setFeignClass(Class<T> feignClass) {
+        this.feignClass = feignClass;
+    }
 
-	private int getInt(int defaultValue, String regex) {
-		if(StringUtils.isEmpty(regex)){
-			return defaultValue;
-		}
-		return Integer.parseInt(valueResolver.resolveStringValue(regex));
-	}
+    @Override
+    public void setEmbeddedValueResolver(@NonNull StringValueResolver valueResolver) {
+        this.valueResolver = valueResolver;
+        FeignManager.setStringValueResolver(valueResolver);
+    }
 
-	private long getLong(long defaultValue, String regex) {
-		if(StringUtils.isEmpty(regex)){
-			return defaultValue;
-		}
-		return Long.parseLong(valueResolver.resolveStringValue(regex));
-	}
+    @Override
+    public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+        FeignManager.setApplicationContext(applicationContext);
+    }
 
-	@Override
-	public Class<?> getObjectType() {
-		return feignClass;
-	}
+    @Override
+    public T getObject() {
+        FeignClient feign = AnnotationUtils.getAnnotation(feignClass, FeignClient.class);
+        assert feign != null;
+        org.slf4j.Logger logger = LoggerFactory.getLogger(feign.logger());
 
-	public Class<?> getFeignClass() {
-		return feignClass;
-	}
+        FeignBuilder builder = FeignManager.builder(feign);
+        return builder.target(feignClass, feign.url(), feign.name(), applicationContext, valueResolver, logger);
+    }
 
-	public void setFeignClass(Class<?> feignClass) {
-		this.feignClass = feignClass;
-	}
+    @Override
+    public Class<?> getObjectType() {
+        return feignClass;
+    }
 }
