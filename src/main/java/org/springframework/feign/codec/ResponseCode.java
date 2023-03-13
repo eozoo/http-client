@@ -16,9 +16,10 @@ public enum ResponseCode {
 	UNAUTHORIZED(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"),
 	
 	FORBIDDEN(HttpServletResponse.SC_FORBIDDEN, "Forbidden"),
-	TOKEN_INVALID_OR_EXPIRED(498, "Token invalid or expired"),
+	
+	TOKEN_INVALID_OR_EXPIRED(498, "Token changed or expired"),
 
-	INTERNAL_SERVER_ERROR(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal Server Error");
+	INTERNAL_SERVER_ERROR(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "System Error");
 
 	private final int code;
 	
