@@ -19,6 +19,7 @@ public class FeignTemplateFactory {
     protected final MethodMetadata metadata;
     private final Map<Integer, Param.Expander> indexToExpander = new LinkedHashMap<Integer, Param.Expander>();
 
+    @SuppressWarnings("deprecation")
     public FeignTemplateFactory(MethodMetadata metadata) {
         this.metadata = metadata;
         if (metadata.indexToExpander() != null) {
@@ -76,6 +77,7 @@ public class FeignTemplateFactory {
         return template;
     }
 
+    @SuppressWarnings("rawtypes")
     private Object expandElements(Param.Expander expander, Object value) {
         if (value instanceof Iterable) {
             return expandIterable(expander, (Iterable) value);
@@ -83,6 +85,7 @@ public class FeignTemplateFactory {
         return expander.expand(value);
     }
 
+    @SuppressWarnings("rawtypes")
     private List<String> expandIterable(Param.Expander expander, Iterable value) {
         List<String> values = new ArrayList<String>();
         for (Object element : (Iterable) value) {

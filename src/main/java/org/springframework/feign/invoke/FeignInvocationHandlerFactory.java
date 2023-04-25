@@ -14,6 +14,7 @@ import java.util.Map;
  */
 public class FeignInvocationHandlerFactory implements InvocationHandlerFactory {
 
+    @SuppressWarnings("rawtypes")
     @Override
     public InvocationHandler create(Target target, Map<Method, MethodHandler> dispatch) {
         return new FeignInvocationHandler(target, dispatch);

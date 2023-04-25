@@ -1,18 +1,22 @@
 package org.springframework.feign.invoke;
 
-import feign.*;
-import feign.codec.Decoder;
-import feign.codec.Encoder;
-import feign.codec.ErrorDecoder;
-import org.springframework.feign.invoke.template.FeignBuildEncodedTemplate;
-import org.springframework.feign.invoke.template.FeignBuildFormEncodedTemplate;
-import org.springframework.feign.invoke.template.FeignTemplateFactory;
+import static feign.Util.checkNotNull;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static feign.Util.checkNotNull;
+import org.springframework.feign.invoke.template.FeignBuildEncodedTemplate;
+import org.springframework.feign.invoke.template.FeignBuildFormEncodedTemplate;
+import org.springframework.feign.invoke.template.FeignTemplateFactory;
+
+import feign.Contract;
+import feign.InvocationHandlerFactory;
+import feign.MethodMetadata;
+import feign.Request;
+import feign.Target;
+import feign.codec.Decoder;
+import feign.codec.Encoder;
 
 /**
  *

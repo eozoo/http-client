@@ -16,9 +16,12 @@ import static feign.Util.checkNotNull;
  */
 public class FeignInvocationHandler implements InvocationHandler {
 
+    @SuppressWarnings("rawtypes")
     private final Target target;
+    
     private final Map<Method, InvocationHandlerFactory.MethodHandler> dispatch;
 
+    @SuppressWarnings("rawtypes")
     FeignInvocationHandler(Target target, Map<Method, InvocationHandlerFactory.MethodHandler> dispatch) {
         this.target = checkNotNull(target, "target");
         this.dispatch = checkNotNull(dispatch, "dispatch for %s", target);
