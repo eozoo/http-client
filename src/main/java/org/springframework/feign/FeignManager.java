@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import feign.Client;
 import feign.Request;
+import feign.RequestInterceptor;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.jackson.JacksonDecoder;
@@ -103,6 +104,7 @@ public class FeignManager {
         return builder(feign, new Request.Options(connectTimeoutMillis, readTimeoutMillis));
     }
 
+    @SuppressWarnings("deprecation")
     static FeignBuilder builder(FeignClient feign, Request.Options options) {
         long period = getLong(feign.period(), feign.periodStr());
         long maxPeriod = getLong(feign.maxPeriod(), feign.maxPeriodStr());
@@ -110,8 +112,14 @@ public class FeignManager {
 
         FeignBuilder builder = new FeignBuilder().options(options)
                 .retryer(new DefaultRetryer(period, maxPeriod, maxAttempts))
-                .requestInterceptor(new FeignInterceptor())
                 .invocationHandlerFactory(new FeignInvocationHandlerFactory());
+        
+        String[] interceptors = applicationContext.getBeanNamesForType(RequestInterceptor.class);
+        if(interceptors != null && interceptors.length > 0) {
+            String interceptor = interceptors[0];
+            RequestInterceptor requestInterceptor = applicationContext.getBean(interceptor, RequestInterceptor.class);
+            builder.requestInterceptor(requestInterceptor);
+        }
 
         try{
             builder.encoder(encoder(feign)).decoder(decoder(feign));
@@ -138,6 +146,7 @@ public class FeignManager {
         return builder;
     }
 
+    @SuppressWarnings("deprecation")
     static Encoder encoder(FeignClient feign) throws Exception {
         if (JacksonEncoder.class == feign.encoder()) {
             ObjectMapper encoderMapper = new ObjectMapper();
