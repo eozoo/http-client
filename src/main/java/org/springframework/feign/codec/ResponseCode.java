@@ -19,7 +19,9 @@ public enum ResponseCode {
 	
 	TOKEN_INVALID_OR_EXPIRED(498, "Token changed or expired"),
 
-	INTERNAL_SERVER_ERROR(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "System Error");
+	INTERNAL_SERVER_ERROR(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "System Error"),
+
+	NMS_ERROR(597, "Nms Error");
 
 	private final int code;
 	
