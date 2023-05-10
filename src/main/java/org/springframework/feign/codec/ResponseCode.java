@@ -21,7 +21,7 @@ public enum ResponseCode {
 
 	INTERNAL_SERVER_ERROR(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "System Error"),
 
-	NMS_ERROR(597, "Nms Error");
+	SYS_ERROR(597, "Sys Error");
 
 	private final int code;
 	
