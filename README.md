@@ -1,3 +1,3 @@
 # spring-feign
 
-基于Spring注入，对Netflix Feign做了下整合
+基于Netflix Feign做了下spring整合
