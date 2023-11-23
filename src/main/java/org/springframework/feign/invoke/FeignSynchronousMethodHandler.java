@@ -3,6 +3,7 @@ package org.springframework.feign.invoke;
 import feign.*;
 import feign.codec.DecodeException;
 import feign.codec.Decoder;
+import org.springframework.feign.codec.RemoteChain;
 import org.springframework.feign.invoke.template.FeignTemplateFactory;
 
 import java.io.IOException;
@@ -63,12 +64,16 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
         Request request = targetRequest(template);
         String url = request.url();
 
+        FeignTarget<?> feignTarget = (FeignTarget<?>)target;
+        String name = feignTarget.name();
+
         Response response;
         long start = System.nanoTime();
         try {
             response = client.execute(request, options);
         } catch (IOException e) {
             long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
+            RemoteChain.appendChain(false, name, url, cost, -1, -1);// TODO
             throw new RemoteException(format("remote failed %sms %s ", cost, url), e);
         }
 
@@ -76,6 +81,7 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
         int status = response.status();
         boolean shouldClose = true;
         try {
+            // Feign自带的Response
             if (Response.class == metadata.returnType()) {
                 if (response.body() == null) {
                     return response;
@@ -88,19 +94,30 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
 
                 // Ensure the response body is disconnected
                 byte[] bodyData = Util.toByteArray(response.body().asInputStream());
-                return Response.create(response.status(), response.reason(), response.headers(), bodyData);
+                return Response.create(status, response.reason(), response.headers(), bodyData);
             }
 
-            if (response.status() >= 200 && response.status() < 300) {
+            if (status >= 200 && status < 300) {
                 logger.info(">< remote   {} {}ms {}", status, cost, url);
                 if (void.class == metadata.returnType()) {
+                    RemoteChain.appendChain(true, name, url, cost, status, 0);// TODO
                     return null;
                 } else {
-                    return decode(response);
+                    try {
+                        return decoder.decode(response, metadata.returnType());
+                    } catch (FeignException e) {
+                        RemoteChain.appendChain(false, name, url, cost, status, -3);
+                        throw e;
+                    } catch (RuntimeException e) {
+                        RemoteChain.appendChain(false, name, url, cost, status, -3);
+                        throw new DecodeException(e.getMessage(), e);
+                    }
                 }
             }
-            throw new RemoteException(format("remote[%s] %sms %s", status, cost, url));
+            RemoteChain.appendChain(false, name, url, cost, status, -2);
+            throw new RemoteException(format("remote[%s] %sms %s", status, cost, url)); // TODO
         } catch (IOException e) {
+            RemoteChain.appendChain(false, name, url, cost, -2, -2);// TODO
             throw new RemoteException(format("remote failed %sms %s ", cost, url), e);
         } finally {
             if (shouldClose) {
@@ -114,15 +131,5 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
             interceptor.apply(template);
         }
         return target.apply(new RequestTemplate(template));
-    }
-
-    Object decode(Response response) throws Throwable {
-        try {
-            return decoder.decode(response, metadata.returnType());
-        } catch (FeignException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            throw new DecodeException(e.getMessage(), e);
-        }
     }
 }

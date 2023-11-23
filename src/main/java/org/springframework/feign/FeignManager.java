@@ -113,7 +113,7 @@ public class FeignManager {
         FeignBuilder builder = new FeignBuilder().options(options)
                 .retryer(new DefaultRetryer(period, maxPeriod, maxAttempts))
                 .invocationHandlerFactory(new FeignInvocationHandlerFactory());
-        
+
         String[] interceptors = applicationContext.getBeanNamesForType(RequestInterceptor.class);
         if(interceptors != null && interceptors.length > 0) {
             String interceptor = interceptors[0];
@@ -148,7 +148,7 @@ public class FeignManager {
 
     @SuppressWarnings("deprecation")
     static Encoder encoder(FeignClient feign) throws Exception {
-        if (JacksonEncoder.class == feign.encoder()) {
+        if (JacksonEncoder.class.isAssignableFrom(feign.encoder())) {
             ObjectMapper encoderMapper = new ObjectMapper();
             encoderMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL).configure(SerializationFeature.INDENT_OUTPUT, true)
                     .registerModules(Collections.emptyList());

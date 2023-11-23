@@ -4,7 +4,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 /**
  *
@@ -13,6 +13,8 @@ import java.util.LinkedList;
  */
 @Data
 public class RemoteChain {
+
+    public static final ThreadLocal<ArrayList<RemoteChain>> CHAIN = new ThreadLocal<>();
 
     @JsonIgnore
     @JSONField(serialize = false)
@@ -34,26 +36,42 @@ public class RemoteChain {
     @JSONField(serialize = false)
     private int cost;
 
+    @JsonIgnore
+    @JSONField(serialize = false)
+    private boolean async;
+
+    @JsonIgnore
+    @JSONField(serialize = false)
+    private int code;
+
+    @JsonIgnore
+    @JSONField(serialize = false)
+    private int httpCode;
+
     private String detail;
 
-    private LinkedList<RemoteChain> children;
+    private ArrayList<RemoteChain> children;
 
     public String getDetail(){
         if(detail != null){
             return detail;
         }
         StringBuilder builder = new StringBuilder();
+        if(async){
+            builder.append("*");
+        }
         builder.append("[");
         builder.append(succs).append("/").append(count);
+        builder.append(" ").append(httpCode).append("|").append(code);
         builder.append(" ").append(cost).append("ms");
         if(name != null){
             builder.append(" ").append(name);
         }
-        builder.append("]").append(url);
+        builder.append("]").append(" ").append(url);
         return builder.toString();
     }
 
-    public static void buildeTree(String prefix, LinkedList<RemoteChain> chains, StringBuilder builder) {
+    public static void buildeTree(String prefix, ArrayList<RemoteChain> chains, StringBuilder builder) {
         if (chains != null) {
             for (int i = 0; i < chains.size(); i++) {
                 RemoteChain chain = chains.get(i);
@@ -64,5 +82,9 @@ public class RemoteChain {
                 }
             }
         }
+    }
+
+    public static void appendChain(boolean success, String name, String url, long cost, int httpCode, int code){
+
     }
 }
