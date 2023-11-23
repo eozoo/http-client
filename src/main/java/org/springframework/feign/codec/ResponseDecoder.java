@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.Module;
 import feign.Response;
 import feign.jackson.JacksonDecoder;
+import org.springframework.feign.invoke.RemoteException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class ResponseDecoder extends JacksonDecoder {
     private final ObjectMapper mapper;
 
     public ResponseDecoder() {
-        this(Collections.<Module>emptyList());
+        this(Collections.emptyList());
     }
 
     public ResponseDecoder(Iterable<Module> modules) {
@@ -54,14 +55,14 @@ public class ResponseDecoder extends JacksonDecoder {
             org.springframework.feign.codec.Response<?> resp =
                     mapper.readValue(reader, org.springframework.feign.codec.Response.class);
             if(ResponseCode.OK.getCode() != resp.getCode()){
-                throw new RuntimeException(resp.getCode() + ", " + resp.getMsg());
+                throw new RemoteException(resp.getCode() + ", " + resp.getMsg());
             }
 
             String data = mapper.writeValueAsString(resp.getData());
             return mapper.readValue(data, mapper.constructType(type));
         } catch (RuntimeJsonMappingException e) {
             if (e.getCause() != null && e.getCause() instanceof IOException) {
-                throw IOException.class.cast(e.getCause());
+                throw (IOException) e.getCause();
             }
             throw e;
         }

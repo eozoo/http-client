@@ -5,7 +5,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -29,7 +28,8 @@ public class Response<T> {
 	/** 响应数据 */
 	private T data;
 
-	private ArrayList<LinkedList<String>> chain;
+	/** 调用链 **/
+	private ArrayList<RemoteChain> chains;
 
 	private Response(int code, T data){
 		this.code = code;
