@@ -34,7 +34,7 @@ public class EJacksonDecoder implements FeignDecoder {
     }
 
     @Override
-    public Object decode(Response response, Type type, String name, String url, long cost, int httpCode) throws IOException {
+    public Object decode(Response response, Type type, String name, String url, long cost, int httpCode, org.slf4j.Logger logger) throws IOException {
         Reader reader = response.body().asReader();
         if (!reader.markSupported()) {
             reader = new BufferedReader(reader, 1);
@@ -50,6 +50,7 @@ public class EJacksonDecoder implements FeignDecoder {
 
             if (void.class == type) {
                 RemoteChain.appendChain(true, name, url, cost, httpCode, "?");
+                logger.info(">< remote   {}|? {}ms {}", httpCode, cost, url);
                 return null;
             }
 
@@ -57,8 +58,10 @@ public class EJacksonDecoder implements FeignDecoder {
             if(org.springframework.feign.codec.Response.class.isAssignableFrom(obj.getClass())){
                 org.springframework.feign.codec.Response resp = (org.springframework.feign.codec.Response)obj;
                 RemoteChain.appendChain(true, name, url, cost, httpCode, String.valueOf(resp.getCode()));
+                logger.info(">< remote   {}|{} {}ms {}", httpCode, resp.getCode(), cost, url);
 ;            }else{
                 RemoteChain.appendChain(true, name, url, cost, httpCode, "?");
+                logger.info(">< remote   {}|? {}ms {}", httpCode, cost, url);
             }
             return obj;
         } catch (RuntimeJsonMappingException e) {

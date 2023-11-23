@@ -98,9 +98,8 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
             }
 
             if (status >= 200 && status < 300) {
-                logger.info(">< remote   {} {}ms {}", status, cost, url);
                 try {
-                    return decoder.decode(response, metadata.returnType(), name, url, cost, status);
+                    return decoder.decode(response, metadata.returnType(), name, url, cost, status, logger);
                 } catch (FeignException e) {
                     RemoteChain.appendChain(false, name, url, cost, status, "E3");
                     throw e;

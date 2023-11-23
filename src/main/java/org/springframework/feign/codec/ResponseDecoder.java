@@ -34,7 +34,7 @@ public class ResponseDecoder implements FeignDecoder {
     }
 
     @Override
-    public Object decode(Response response, Type type, String name, String url, long cost, int httpCode) throws IOException {
+    public Object decode(Response response, Type type, String name, String url, long cost, int httpCode, org.slf4j.Logger logger) throws IOException {
         if (response.body() == null) {
             return null;
         }
@@ -57,14 +57,17 @@ public class ResponseDecoder implements FeignDecoder {
                     mapper.readValue(reader, org.springframework.feign.codec.Response.class);
             if(ResponseCode.OK.getCode() != resp.getCode()){
                 RemoteChain.appendChain(true, name, url, cost, httpCode, String.valueOf(resp.getCode()));
+                logger.info(">< remote   {}|{} {}ms {}", httpCode, resp.getCode(), cost, url);
                 throw new RemoteException(resp.getCode() + ", " + resp.getMsg());
             }
 
             if (void.class == type) {
                 RemoteChain.appendChain(true, name, url, cost, httpCode, String.valueOf(resp.getCode()));
+                logger.info(">< remote   {}|{} {}ms {}", httpCode, resp.getCode(), cost, url);
                 return null;
             }
 
+            logger.info(">< remote   {}|{} {}ms {}", httpCode, resp.getCode(), cost, url);
             RemoteChain.appendChain(true, name, url, cost, httpCode, String.valueOf(resp.getCode()));
             String data = mapper.writeValueAsString(resp.getData());
             return mapper.readValue(data, mapper.constructType(type));
