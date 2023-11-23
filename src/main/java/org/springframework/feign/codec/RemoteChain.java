@@ -30,7 +30,7 @@ public class RemoteChain {
 
     @JsonIgnore
     @JSONField(serialize = false)
-    private int count;
+    private int count = 1;
 
     @JsonIgnore
     @JSONField(serialize = false)
@@ -51,6 +51,18 @@ public class RemoteChain {
     private String detail;
 
     private ArrayList<RemoteChain> children;
+
+    public void increaseCost(long cost2){
+        this.cost = cost + cost2;
+    }
+
+    public void increaseCount(){
+        this.count++;
+    }
+
+    public void increaseSuccs(){
+        this.succs++;
+    }
 
     public String getDetail(){
         if(detail != null){
@@ -84,7 +96,38 @@ public class RemoteChain {
         }
     }
 
-    public static void appendChain(boolean success, String name, String url, long cost, int httpCode, String code){
+    public static void appendChain(boolean success, String name, String url, long cost, int httpCode, String code, ArrayList<RemoteChain> next){
+        String realUrl = url.substring(0, url.indexOf("?"));
 
+        ArrayList<RemoteChain> chainList = CHAIN.get();
+        if(chainList == null){
+            chainList = new ArrayList<>();
+            CHAIN.set(chainList);
+        }else{
+            RemoteChain preChain = chainList.get(chainList.size() - 1);
+            if(realUrl.equals(preChain.getUrl())){
+                preChain.increaseCount();
+                preChain.increaseCost(cost);
+            }
+            if(success){
+                preChain.increaseSuccs();
+            }else{
+                // 只在失败时更新code
+                preChain.setHttpCode(httpCode);
+                preChain.setCode(code);
+            }
+        }
+
+        RemoteChain chain = new RemoteChain();
+        if(success){
+            chain.setSuccs(1);
+        }
+        chain.setName(name);
+        chain.setUrl(url);
+        chain.setCost(cost);
+        chain.setHttpCode(httpCode);
+        chain.setCode(code);
+        chain.setChildren(next);
+        chainList.add(chain);
     }
 }

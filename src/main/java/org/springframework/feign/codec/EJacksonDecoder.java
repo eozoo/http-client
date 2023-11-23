@@ -43,13 +43,13 @@ public class EJacksonDecoder implements FeignDecoder {
             reader.mark(1);
             if (reader.read() == -1) {
                 // Eagerly returning null avoids "No content to map due to end-of-input"
-                RemoteChain.appendChain(true, name, url, cost, httpCode, "?");
+                RemoteChain.appendChain(true, name, url, cost, httpCode, "?", null);
                 return null;
             }
             reader.reset();
 
             if (void.class == type) {
-                RemoteChain.appendChain(true, name, url, cost, httpCode, "?");
+                RemoteChain.appendChain(true, name, url, cost, httpCode, "?", null);
                 logger.info(">< remote   {}|? {}ms {}", httpCode, cost, url);
                 return null;
             }
@@ -57,10 +57,10 @@ public class EJacksonDecoder implements FeignDecoder {
             Object obj = mapper.readValue(reader, mapper.constructType(type));
             if(org.springframework.feign.codec.Response.class.isAssignableFrom(obj.getClass())){
                 org.springframework.feign.codec.Response resp = (org.springframework.feign.codec.Response)obj;
-                RemoteChain.appendChain(true, name, url, cost, httpCode, String.valueOf(resp.getCode()));
+                RemoteChain.appendChain(true, name, url, cost, httpCode, String.valueOf(resp.getCode()), resp.getChains());
                 logger.info(">< remote   {}|{} {}ms {}", httpCode, resp.getCode(), cost, url);
 ;            }else{
-                RemoteChain.appendChain(true, name, url, cost, httpCode, "?");
+                RemoteChain.appendChain(true, name, url, cost, httpCode, "?", null);
                 logger.info(">< remote   {}|? {}ms {}", httpCode, cost, url);
             }
             return obj;
@@ -68,7 +68,7 @@ public class EJacksonDecoder implements FeignDecoder {
             if (e.getCause() != null && e.getCause() instanceof IOException) {
                 throw IOException.class.cast(e.getCause());
             }
-            RemoteChain.appendChain(false, name, url, cost, httpCode, "E4");
+            RemoteChain.appendChain(false, name, url, cost, httpCode, "E4", null);
             throw e;
         }
     }
