@@ -1,7 +1,11 @@
 package org.springframework.feign.codec;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -9,6 +13,8 @@ import java.util.List;
  * @author shanhuiming
  *
  */
+@NoArgsConstructor
+@Data
 public class Response<T> {
 
 	/** 请求Id */
@@ -23,40 +29,17 @@ public class Response<T> {
 	/** 响应数据 */
 	private T data;
 
-	public String getRequestId() {
-		return requestId;
-	}
+	private ArrayList<LinkedList<String>> chain;
 
-	public void setRequestId(String requestId) {
-		this.requestId = requestId;
-	}
-
-	public String getMsg() {
-		return msg;
-	}
-
-	public void setMsg(String msg) {
-		this.msg = msg;
-	}
-
-	public int getCode() {
-		return code;
-	}
-
-	public void setCode(int code) {
+	private Response(int code, T data){
 		this.code = code;
-	}
-
-	public T getData() {
-		return data;
-	}
-
-	public void setData(T data) {
 		this.data = data;
 	}
 
-	public Response(){
-
+	private Response(int code, T data, String msg){
+		this.code = code;
+		this.data = data;
+		this.msg = msg;
 	}
 
 	public Response(ResponseCode responseCode){
@@ -70,28 +53,9 @@ public class Response<T> {
 		this.data = data;
 	}
 
-	private Response(int code, T data){
-		this.code = code;
-		this.data = data;
-	}
-
-	private Response(int code, T data, String msg){
-		this.code = code;
-		this.data = data;
-		this.msg = msg;
-	}
-
 	@Override
 	public String toString() {
 		return "{requestId=" + requestId + ", code=" + code + ", msg=" + msg + ", data=" + data + "}";
-	}
-
-	public static <V> Response<V> response(int code, V data){
-		return new Response<>(code, data);
-	}
-
-	public static <V> Response<V> response(int code, V data, String msg){
-		return new Response<>(code, data, msg);
 	}
 
 	public static <V> Response<V> success(){
@@ -120,6 +84,10 @@ public class Response<T> {
 		Response<V> response = new Response<>(ResponseCode.INTERNAL_SERVER_ERROR);
 		response.msg = msg;
 		return response;
+	}
+
+	public static <V> Response<V> error(int code, String msg){
+		return new Response<>(code, null, msg);
 	}
 
 	public static <V> Response<V> error(ResponseCode responseCode, String msg){

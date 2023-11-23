@@ -29,11 +29,9 @@ public class FeignTemplateFactory {
         if (metadata.indexToExpanderClass().isEmpty()) {
             return;
         }
-        for (Map.Entry<Integer, Class<? extends Param.Expander>> indexToExpanderClass : metadata
-                .indexToExpanderClass().entrySet()) {
+        for (Map.Entry<Integer, Class<? extends Param.Expander>> indexToExpanderClass : metadata.indexToExpanderClass().entrySet()) {
             try {
-                indexToExpander
-                        .put(indexToExpanderClass.getKey(), indexToExpanderClass.getValue().newInstance());
+                indexToExpander.put(indexToExpanderClass.getKey(), indexToExpanderClass.getValue().newInstance());
             } catch (InstantiationException e) {
                 throw new IllegalStateException(e);
             } catch (IllegalAccessException e) {
