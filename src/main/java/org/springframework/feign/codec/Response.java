@@ -1,7 +1,6 @@
 package org.springframework.feign.codec;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,7 +11,6 @@ import java.util.List;
  * @author shanhuiming
  *
  */
-@NoArgsConstructor
 @Data
 public class Response<T> {
 
@@ -31,26 +29,34 @@ public class Response<T> {
 	/** 调用链 **/
 	private ArrayList<RemoteChain> chains;
 
+	public Response(){
+		this.chains = RemoteChain.CHAIN.get();
+	}
+
 	private Response(int code, T data){
 		this.code = code;
 		this.data = data;
+		this.chains = RemoteChain.CHAIN.get();
 	}
 
 	private Response(int code, T data, String msg){
 		this.code = code;
 		this.data = data;
 		this.msg = msg;
+		this.chains = RemoteChain.CHAIN.get();
 	}
 
 	public Response(ResponseCode responseCode){
 		this.code = responseCode.getCode();
 		this.msg = responseCode.getDesc();
+		this.chains = RemoteChain.CHAIN.get();
 	}
 
 	public Response(ResponseCode responseCode, T data){
 		this.code = responseCode.getCode();
 		this.msg = responseCode.getDesc();
 		this.data = data;
+		this.chains = RemoteChain.CHAIN.get();
 	}
 
 	@Override
