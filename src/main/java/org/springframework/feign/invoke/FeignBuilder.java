@@ -1,9 +1,9 @@
 package org.springframework.feign.invoke;
 
 import feign.*;
-import feign.codec.Decoder;
 import feign.codec.Encoder;
 import org.springframework.context.ApplicationContext;
+import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.retryer.DefaultRetryer;
 import org.springframework.util.StringValueResolver;
 
@@ -21,7 +21,7 @@ public class FeignBuilder {
     private Client client = new Client.Default(null, null);
     private org.springframework.feign.retryer.Retryer retryer = new DefaultRetryer();
     private Encoder encoder = new Encoder.Default();
-    private Decoder decoder = new Decoder.Default();
+    private FeignDecoder decoder = new FeignDecoder.StringDecoder();
     private Request.Options options = new Request.Options();
     private InvocationHandlerFactory invocationHandlerFactory = new InvocationHandlerFactory.Default();
 
@@ -39,7 +39,7 @@ public class FeignBuilder {
         return this;
     }
 
-    public FeignBuilder decoder(Decoder decoder) {
+    public FeignBuilder decoder(FeignDecoder decoder) {
         this.decoder = decoder;
         return this;
     }

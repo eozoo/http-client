@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.invoke.template.FeignBuildEncodedTemplate;
 import org.springframework.feign.invoke.template.FeignBuildFormEncodedTemplate;
 import org.springframework.feign.invoke.template.FeignTemplateFactory;
@@ -15,7 +16,6 @@ import feign.InvocationHandlerFactory;
 import feign.MethodMetadata;
 import feign.Request;
 import feign.Target;
-import feign.codec.Decoder;
 import feign.codec.Encoder;
 
 /**
@@ -27,11 +27,11 @@ public class FeignParseHandlersByName {
     private final Contract contract;
     private final Request.Options options;
     private final Encoder encoder;
-    private final Decoder decoder;
+    private final FeignDecoder decoder;
     private final FeignMethodHandlerFactory factory;
     private final org.slf4j.Logger logger;
 
-    FeignParseHandlersByName(Contract contract, Request.Options options, Encoder encoder, Decoder decoder,
+    FeignParseHandlersByName(Contract contract, Request.Options options, Encoder encoder, FeignDecoder decoder,
                         FeignMethodHandlerFactory factory, org.slf4j.Logger logger) {
         this.contract = contract;
         this.options = options;

@@ -2,7 +2,7 @@ package org.springframework.feign.invoke;
 
 import feign.*;
 import feign.codec.DecodeException;
-import feign.codec.Decoder;
+import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.codec.RemoteChain;
 import org.springframework.feign.invoke.template.FeignTemplateFactory;
 
@@ -27,7 +27,7 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
     private final List<RequestInterceptor> requestInterceptors;
     private final FeignTemplateFactory buildTemplateFromArgs;
     private final Request.Options options;
-    private final Decoder decoder;
+    private final FeignDecoder decoder;
 
     public FeignSynchronousMethodHandler(Target<?> target, Client client,
                                          org.springframework.feign.retryer.Retryer retryer,
@@ -35,7 +35,7 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
                                          MethodMetadata metadata,
                                          FeignTemplateFactory buildTemplateFromArgs,
                                          Request.Options options,
-                                         Decoder decoder, org.slf4j.Logger logger) {
+                                         FeignDecoder decoder, org.slf4j.Logger logger) {
         this.target = checkNotNull(target, "target");
         this.client = checkNotNull(client, "client for %s", target);
         this.retryer = checkNotNull(retryer, "retryer for %s", target);
@@ -73,7 +73,7 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
             response = client.execute(request, options);
         } catch (IOException e) {
             long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-            RemoteChain.appendChain(false, name, url, cost, -1, -1);// TODO
+            RemoteChain.appendChain(false, name, url, cost, -1, "E1");
             throw new RemoteException(format("remote failed %sms %s ", cost, url), e);
         }
 
@@ -99,25 +99,20 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
 
             if (status >= 200 && status < 300) {
                 logger.info(">< remote   {} {}ms {}", status, cost, url);
-                if (void.class == metadata.returnType()) {
-                    RemoteChain.appendChain(true, name, url, cost, status, 0);// TODO
-                    return null;
-                } else {
-                    try {
-                        return decoder.decode(response, metadata.returnType());
-                    } catch (FeignException e) {
-                        RemoteChain.appendChain(false, name, url, cost, status, -3);
-                        throw e;
-                    } catch (RuntimeException e) {
-                        RemoteChain.appendChain(false, name, url, cost, status, -3);
-                        throw new DecodeException(e.getMessage(), e);
-                    }
+                try {
+                    return decoder.decode(response, metadata.returnType(), name, url, cost, status);
+                } catch (FeignException e) {
+                    RemoteChain.appendChain(false, name, url, cost, status, "E3");
+                    throw e;
+                } catch (RuntimeException e) {
+                    RemoteChain.appendChain(false, name, url, cost, status, "E3");
+                    throw new DecodeException(e.getMessage(), e);
                 }
             }
-            RemoteChain.appendChain(false, name, url, cost, status, -2);
-            throw new RemoteException(format("remote[%s] %sms %s", status, cost, url)); // TODO
+            RemoteChain.appendChain(false, name, url, cost, status, "E2");
+            throw new RemoteException(format("remote[%s] %sms %s", status, cost, url));
         } catch (IOException e) {
-            RemoteChain.appendChain(false, name, url, cost, -2, -2);// TODO
+            RemoteChain.appendChain(false, name, url, cost, -2, "E2");
             throw new RemoteException(format("remote failed %sms %s ", cost, url), e);
         } finally {
             if (shouldClose) {

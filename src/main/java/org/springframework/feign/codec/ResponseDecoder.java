@@ -3,7 +3,6 @@ package org.springframework.feign.codec;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.Module;
 import feign.Response;
-import feign.jackson.JacksonDecoder;
 import org.springframework.feign.invoke.RemoteException;
 
 import java.io.BufferedReader;
@@ -17,7 +16,7 @@ import java.util.Collections;
  * @author shanhuiming
  *
  */
-public class ResponseDecoder extends JacksonDecoder {
+public class ResponseDecoder implements FeignDecoder {
 
     private final ObjectMapper mapper;
 
@@ -35,7 +34,7 @@ public class ResponseDecoder extends JacksonDecoder {
     }
 
     @Override
-    public Object decode(Response response, Type type) throws IOException {
+    public Object decode(Response response, Type type, String name, String url, long cost, int httpCode) throws IOException {
         if (response.body() == null) {
             return null;
         }
@@ -48,22 +47,32 @@ public class ResponseDecoder extends JacksonDecoder {
         try {
             reader.mark(1); // Read the first byte to see if we have any data
             if (reader.read() == -1) {
-                return null; // Eagerly returning null avoids "No content to map due to end-of-input"
+                // Eagerly returning null avoids "No content to map due to end-of-input"
+                RemoteChain.appendChain(false, name, url, cost, httpCode, "?");
+                return null;
             }
             reader.reset();
 
             org.springframework.feign.codec.Response<?> resp =
                     mapper.readValue(reader, org.springframework.feign.codec.Response.class);
             if(ResponseCode.OK.getCode() != resp.getCode()){
+                RemoteChain.appendChain(true, name, url, cost, httpCode, String.valueOf(resp.getCode()));
                 throw new RemoteException(resp.getCode() + ", " + resp.getMsg());
             }
 
+            if (void.class == type) {
+                RemoteChain.appendChain(true, name, url, cost, httpCode, String.valueOf(resp.getCode()));
+                return null;
+            }
+
+            RemoteChain.appendChain(true, name, url, cost, httpCode, String.valueOf(resp.getCode()));
             String data = mapper.writeValueAsString(resp.getData());
             return mapper.readValue(data, mapper.constructType(type));
         } catch (RuntimeJsonMappingException e) {
             if (e.getCause() != null && e.getCause() instanceof IOException) {
                 throw (IOException) e.getCause();
             }
+            RemoteChain.appendChain(false, name, url, cost, httpCode, "E4");
             throw e;
         }
     }

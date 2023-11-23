@@ -16,16 +16,16 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import feign.Client;
 import feign.Request;
 import feign.RequestInterceptor;
-import feign.codec.Decoder;
 import feign.codec.Encoder;
-import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.feign.annotation.FeignClient;
+import org.springframework.feign.codec.EJacksonDecoder;
 import org.springframework.feign.codec.EJacksonEncoder;
+import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.codec.ResponseDecoder;
 import org.springframework.feign.invoke.FeignBuilder;
 import org.springframework.feign.invoke.FeignInvocationHandlerFactory;
@@ -161,7 +161,7 @@ public class FeignManager {
         }
     }
 
-    static Decoder decoder(FeignClient feign){
+    static FeignDecoder decoder(FeignClient feign){
         ObjectMapper decoderMapper = new ObjectMapper();
         decoderMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
                 .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
@@ -173,7 +173,7 @@ public class FeignManager {
         if(ResponseDecoder.class == feign.decoder()){
             return new ResponseDecoder(decoderMapper);
         }else{
-            return new JacksonDecoder(decoderMapper);
+            return new EJacksonDecoder(decoderMapper);
         }
     }
 

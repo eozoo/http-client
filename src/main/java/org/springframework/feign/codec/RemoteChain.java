@@ -34,7 +34,7 @@ public class RemoteChain {
 
     @JsonIgnore
     @JSONField(serialize = false)
-    private int cost;
+    private long cost;
 
     @JsonIgnore
     @JSONField(serialize = false)
@@ -42,7 +42,7 @@ public class RemoteChain {
 
     @JsonIgnore
     @JSONField(serialize = false)
-    private int code;
+    private String code;
 
     @JsonIgnore
     @JSONField(serialize = false)
@@ -84,7 +84,7 @@ public class RemoteChain {
         }
     }
 
-    public static void appendChain(boolean success, String name, String url, long cost, int httpCode, int code){
+    public static void appendChain(boolean success, String name, String url, long cost, int httpCode, String code){
 
     }
 }
