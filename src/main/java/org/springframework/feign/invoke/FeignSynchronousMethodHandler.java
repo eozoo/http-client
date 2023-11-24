@@ -5,9 +5,13 @@ import feign.codec.DecodeException;
 import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.codec.RemoteChain;
 import org.springframework.feign.invoke.template.FeignTemplateFactory;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import static feign.Util.checkNotNull;
@@ -70,6 +74,30 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
         Response response;
         long start = System.nanoTime();
         try {
+            RequestAttributes attributes =  RequestContextHolder.getRequestAttributes();
+            String threadName = Thread.currentThread().getName();
+            if(attributes == null && threadName != null && threadName.endsWith("-async")){
+                threadName = threadName.substring(0, threadName.length() - 6);
+                Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.get(threadName);
+                if(chainMap == null){
+                    chainMap = new ConcurrentHashMap<>();
+                    RemoteChain.ASYNC_CHAIN.put(threadName, chainMap);
+                }
+
+                String realUrl = url;
+                int index = realUrl.indexOf("?");
+                if(index != -1){
+                    realUrl = realUrl.substring(0, index);
+                }
+                RemoteChain chain = chainMap.get(realUrl);
+                if(chain != null){
+                    chain.increaseCount();
+                }else{
+                    chain = RemoteChain.newChain(false, name, realUrl, 0, 0, "?", null);
+                    chain.setAsync(true);
+                    chainMap.put(realUrl, chain);
+                }
+            }
             response = client.execute(request, options);
         } catch (IOException e) {
             long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);

@@ -5,6 +5,7 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -27,41 +28,84 @@ public class Response<T> {
 	private T data;
 
 	/** 调用链 **/
-	private ArrayList<RemoteChain> chains;
+	private List<RemoteChain> chains;
 
 	public Response(){
-		this.chains = RemoteChain.CHAIN.get();
-		RemoteChain.CHAIN.remove();
+
 	}
 
 	private Response(int code, T data){
 		this.code = code;
 		this.data = data;
-		this.chains = RemoteChain.CHAIN.get();
-		RemoteChain.CHAIN.remove();
+		RemoteChainHolder holder = RemoteChain.CHAIN.get();
+		if(holder != null){
+			this.chains = holder.getChains();
+		}
+		String threadName = Thread.currentThread().getName();
+		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.get(threadName);
+		if(chainMap != null){
+			if(this.chains == null){
+				this.chains = chainMap.values().stream().toList();
+			}else{
+				this.chains.addAll(chainMap.values());
+			}
+		}
 	}
 
 	private Response(int code, T data, String msg){
 		this.code = code;
 		this.data = data;
 		this.msg = msg;
-		this.chains = RemoteChain.CHAIN.get();
-		RemoteChain.CHAIN.remove();
+		RemoteChainHolder holder = RemoteChain.CHAIN.get();
+		if(holder != null){
+			this.chains = holder.getChains();
+		}
+		String threadName = Thread.currentThread().getName();
+		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.get(threadName);
+		if(chainMap != null){
+			if(this.chains == null){
+				this.chains = chainMap.values().stream().toList();
+			}else{
+				this.chains.addAll(chainMap.values());
+			}
+		}
 	}
 
 	public Response(ResponseCode responseCode){
 		this.code = responseCode.getCode();
 		this.msg = responseCode.getDesc();
-		this.chains = RemoteChain.CHAIN.get();
-		RemoteChain.CHAIN.remove();
+		RemoteChainHolder holder = RemoteChain.CHAIN.get();
+		if(holder != null){
+			this.chains = holder.getChains();
+		}
+		String threadName = Thread.currentThread().getName();
+		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.get(threadName);
+		if(chainMap != null){
+			if(this.chains == null){
+				this.chains = chainMap.values().stream().toList();
+			}else{
+				this.chains.addAll(chainMap.values());
+			}
+		}
 	}
 
 	public Response(ResponseCode responseCode, T data){
 		this.code = responseCode.getCode();
 		this.msg = responseCode.getDesc();
 		this.data = data;
-		this.chains = RemoteChain.CHAIN.get();
-		RemoteChain.CHAIN.remove();
+		RemoteChainHolder holder = RemoteChain.CHAIN.get();
+		if(holder != null){
+			this.chains = holder.getChains();
+		}
+		String threadName = Thread.currentThread().getName();
+		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.get(threadName);
+		if(chainMap != null){
+			if(this.chains == null){
+				this.chains = chainMap.values().stream().toList();
+			}else{
+				this.chains.addAll(chainMap.values());
+			}
+		}
 	}
 
 	@Override

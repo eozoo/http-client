@@ -3,8 +3,15 @@ package org.springframework.feign.codec;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *
@@ -14,7 +21,10 @@ import java.util.ArrayList;
 @Data
 public class RemoteChain {
 
-    public static final ThreadLocal<ArrayList<RemoteChain>> CHAIN = new ThreadLocal<>();
+    public static final ThreadLocal<RemoteChainHolder> CHAIN = new ThreadLocal<>();
+
+    // <threadName, <url, RemoteChain>>
+    public static final Map<String, Map<String, RemoteChain>> ASYNC_CHAIN = new ConcurrentHashMap<>();
 
     @JsonIgnore
     @JSONField(serialize = false)
@@ -26,15 +36,15 @@ public class RemoteChain {
 
     @JsonIgnore
     @JSONField(serialize = false)
-    private int succs;
+    private AtomicInteger succs = new AtomicInteger(0);
 
     @JsonIgnore
     @JSONField(serialize = false)
-    private int count = 1;
+    private AtomicInteger count = new AtomicInteger(1);
 
     @JsonIgnore
     @JSONField(serialize = false)
-    private long cost;
+    private AtomicLong cost = new AtomicLong(0);
 
     @JsonIgnore
     @JSONField(serialize = false)
@@ -50,18 +60,18 @@ public class RemoteChain {
 
     private String detail;
 
-    private ArrayList<RemoteChain> children;
+    private List<RemoteChain> children;
 
-    public void increaseCost(long cost2){
-        this.cost = cost + cost2;
+    public void sumCost(long cost2){
+        this.cost.getAndAdd(cost2);
     }
 
     public void increaseCount(){
-        this.count++;
+        this.count.incrementAndGet();
     }
 
     public void increaseSuccs(){
-        this.succs++;
+        this.succs.incrementAndGet();
     }
 
     public String getDetail(){
@@ -83,7 +93,7 @@ public class RemoteChain {
         return builder.toString();
     }
 
-    public static void buildeTree(String prefix, ArrayList<RemoteChain> chains, StringBuilder builder) {
+    public static void buildeTree(String prefix, List<RemoteChain> chains, StringBuilder builder) {
         if (chains != null) {
             for (int i = 0; i < chains.size(); i++) {
                 RemoteChain chain = chains.get(i);
@@ -93,46 +103,94 @@ public class RemoteChain {
                     builder.append("\n");
                     buildeTree(prefix + (i == chains.size() - 1 ? "    " : "│   "), chain.getChildren(), builder);
                 }
+                if(i < chains.size() - 1){
+                    builder.append("\n");
+                }
             }
         }
     }
 
-    public static void appendChain(boolean success, String name, String url, long cost, int httpCode, String code, ArrayList<RemoteChain> next){
+    public static void appendChain(boolean success, String name, String url, long cost, int httpCode, String code, List<RemoteChain> next){
+        RequestAttributes attributes =  RequestContextHolder.getRequestAttributes();
+        String threadName = Thread.currentThread().getName();
+        if(attributes == null && (threadName == null || !threadName.endsWith("-async"))){
+            // 如果不是servlet或其子线程，就直接忽略，'-async'是一个后缀约定
+            return;
+        }
+
         int index = url.indexOf("?");
         if(index != -1){
             url = url.substring(0, index);
         }
 
-        ArrayList<RemoteChain> chainList = CHAIN.get();
-        if(chainList == null){
-            chainList = new ArrayList<>();
-            CHAIN.set(chainList);
-        }else{
-            RemoteChain preChain = chainList.get(chainList.size() - 1);
-            if(url.equals(preChain.getUrl())){
-                preChain.increaseCount();
-                preChain.increaseCost(cost);
-                if(success){
-                    preChain.increaseSuccs();
-                }else{
-                    // 只在失败时更新code
-                    preChain.setHttpCode(httpCode);
-                    preChain.setCode(code);
+        if(attributes != null){
+            // 如果时servlet线程，直接记到当前ThreadLocal中
+            RemoteChainHolder remoteChainHolder = CHAIN.get();
+            if(remoteChainHolder == null || !remoteChainHolder.getHolderName().equals(threadName)){
+                remoteChainHolder = new RemoteChainHolder(threadName);
+                CHAIN.set(remoteChainHolder);
+                ASYNC_CHAIN.remove(threadName);
+            }
+
+            ArrayList<RemoteChain> chainList = remoteChainHolder.getChains();
+            if(chainList == null){
+                chainList = new ArrayList<>();
+                remoteChainHolder.setChains(chainList);
+            }
+
+            if(!chainList.isEmpty()){
+                RemoteChain lastChain = chainList.get(chainList.size() - 1);
+                // 去掉参数，重复的url只累计次数，也可能参数不同调用链不一样，也就忽略了
+                if(url.equals(lastChain.getUrl())){
+                    lastChain.increaseCount();
+                    lastChain.sumCost(cost);
+                    if(success){
+                        lastChain.increaseSuccs();
+                    }else{
+                        // 累计次数时，如果失败就更新下code，如果不同参数失败的code不一样，只能看的最后一个
+                        lastChain.setHttpCode(httpCode);
+                        lastChain.setCode(code);
+                    }
+                    return;
                 }
+            }
+            chainList.add(newChain(success, name, url, cost, httpCode, code, next));
+        }else if(threadName.endsWith("-async")){
+            // 如果是servlet子线程，则尝试记到全局Map中，如果不存在就忽略（可能被servlet线程清掉了）
+            threadName = threadName.substring(0, threadName.length() - 6);
+            Map<String, RemoteChain> chainMap = ASYNC_CHAIN.get(threadName);
+            if(chainMap == null){
                 return;
             }
-        }
 
+            RemoteChain chain = chainMap.get(url);
+            if(chain == null){
+                return;
+            }
+
+            if(success){
+                chain.increaseSuccs();
+            }
+            chain.sumCost(cost);
+            chain.setHttpCode(httpCode);
+            chain.setCode(code);
+            chain.setChildren(next);
+        }
+    }
+
+    public static RemoteChain newChain(boolean success, String name, String url,
+                                        long cost, int httpCode, String code, List<RemoteChain> next){
         RemoteChain chain = new RemoteChain();
         if(success){
-            chain.setSuccs(1);
+            chain.setSuccs(new AtomicInteger(1));
         }
         chain.setName(name);
         chain.setUrl(url);
-        chain.setCost(cost);
+        chain.setCost(new AtomicLong(cost));
         chain.setHttpCode(httpCode);
         chain.setCode(code);
         chain.setChildren(next);
-        chainList.add(chain);
+        return chain;
     }
+
 }
