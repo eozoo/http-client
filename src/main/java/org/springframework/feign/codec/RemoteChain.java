@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -24,7 +25,7 @@ public class RemoteChain {
     public static final ThreadLocal<RemoteChainHolder> CHAIN = new ThreadLocal<>();
 
     // <threadName, <url, RemoteChain>>
-    public static final Map<String, Map<String, RemoteChain>> ASYNC_CHAIN = new ConcurrentHashMap<>();
+    public static final ConcurrentMap<String, ConcurrentMap<String, RemoteChain>> ASYNC_CHAIN = new ConcurrentHashMap<>();
 
     @JsonIgnore
     @JSONField(serialize = false)
@@ -114,7 +115,7 @@ public class RemoteChain {
         RequestAttributes attributes =  RequestContextHolder.getRequestAttributes();
         String threadName = Thread.currentThread().getName();
         if(attributes == null && (threadName == null || !threadName.endsWith("-async"))){
-            // 如果不是servlet或其子线程，就直接忽略，'-async'是一个后缀约定
+            // 如果不是servlet或其子线程，就忽略，'-async'是一个异步线程的后缀约定
             return;
         }
 
@@ -126,7 +127,12 @@ public class RemoteChain {
         if(attributes != null){
             // 如果时servlet线程，直接记到当前ThreadLocal中
             RemoteChainHolder remoteChainHolder = CHAIN.get();
-            if(remoteChainHolder == null || !remoteChainHolder.getHolderName().equals(threadName)){
+            if(remoteChainHolder == null){
+                remoteChainHolder = new RemoteChainHolder(threadName);
+                CHAIN.set(remoteChainHolder);
+                // 这里不能清除ASYNC_CHAIN，不然第一个同步远程调用必然会清掉所有远程调用记录
+                // 但不删的话，如果远程调用全是异步，那么又会漏删ASYNC_CHAIN，所以要在response中补刀
+            }else if(!remoteChainHolder.getHolderName().equals(threadName)){
                 remoteChainHolder = new RemoteChainHolder(threadName);
                 CHAIN.set(remoteChainHolder);
                 ASYNC_CHAIN.remove(threadName);
@@ -178,8 +184,7 @@ public class RemoteChain {
         }
     }
 
-    public static RemoteChain newChain(boolean success, String name, String url,
-                                        long cost, int httpCode, String code, List<RemoteChain> next){
+    public static RemoteChain newChain(boolean success, String name, String url, long cost, int httpCode, String code, List<RemoteChain> next){
         RemoteChain chain = new RemoteChain();
         if(success){
             chain.setSuccs(new AtomicInteger(1));
@@ -192,5 +197,4 @@ public class RemoteChain {
         chain.setChildren(next);
         return chain;
     }
-
 }

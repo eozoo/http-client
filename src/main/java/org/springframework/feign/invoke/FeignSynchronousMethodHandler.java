@@ -10,9 +10,10 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static feign.Util.checkNotNull;
 import static feign.Util.ensureClosed;
@@ -78,25 +79,20 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
             String threadName = Thread.currentThread().getName();
             if(attributes == null && threadName != null && threadName.endsWith("-async")){
                 threadName = threadName.substring(0, threadName.length() - 6);
-                Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.get(threadName);
-                if(chainMap == null){
-                    chainMap = new ConcurrentHashMap<>();
-                    RemoteChain.ASYNC_CHAIN.put(threadName, chainMap);
-                }
+                ConcurrentMap<String, RemoteChain> chainMap =
+                        RemoteChain.ASYNC_CHAIN.computeIfAbsent(threadName, (key) -> new ConcurrentHashMap<>());
 
                 String realUrl = url;
                 int index = realUrl.indexOf("?");
                 if(index != -1){
                     realUrl = realUrl.substring(0, index);
                 }
-                RemoteChain chain = chainMap.get(realUrl);
-                if(chain != null){
-                    chain.increaseCount();
-                }else{
-                    chain = RemoteChain.newChain(false, name, realUrl, 0, 0, "?", null);
-                    chain.setAsync(true);
-                    chainMap.put(realUrl, chain);
-                }
+
+                RemoteChain chain = RemoteChain.newChain(false, name, realUrl, 0, 0, "?", null);
+                chain.setCount(new AtomicInteger(0)); // 先减1尝试放进去，然后再统一加1
+                chain.setAsync(true);
+                RemoteChain effectChain = chainMap.computeIfAbsent(realUrl, (key) -> chain);
+                effectChain.increaseCount();
             }
             response = client.execute(request, options);
         } catch (IOException e) {

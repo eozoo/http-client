@@ -42,7 +42,7 @@ public class Response<T> {
 			this.chains = holder.getChains();
 		}
 		String threadName = Thread.currentThread().getName();
-		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.get(threadName);
+		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.remove(threadName);
 		if(chainMap != null){
 			if(this.chains == null){
 				this.chains = chainMap.values().stream().toList();
@@ -61,7 +61,7 @@ public class Response<T> {
 			this.chains = holder.getChains();
 		}
 		String threadName = Thread.currentThread().getName();
-		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.get(threadName);
+		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.remove(threadName);
 		if(chainMap != null){
 			if(this.chains == null){
 				this.chains = chainMap.values().stream().toList();
@@ -79,7 +79,7 @@ public class Response<T> {
 			this.chains = holder.getChains();
 		}
 		String threadName = Thread.currentThread().getName();
-		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.get(threadName);
+		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.remove(threadName);
 		if(chainMap != null){
 			if(this.chains == null){
 				this.chains = chainMap.values().stream().toList();
@@ -98,7 +98,7 @@ public class Response<T> {
 			this.chains = holder.getChains();
 		}
 		String threadName = Thread.currentThread().getName();
-		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.get(threadName);
+		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.remove(threadName);
 		if(chainMap != null){
 			if(this.chains == null){
 				this.chains = chainMap.values().stream().toList();
