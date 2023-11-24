@@ -31,12 +31,14 @@ public class Response<T> {
 
 	public Response(){
 		this.chains = RemoteChain.CHAIN.get();
+		RemoteChain.CHAIN.remove();
 	}
 
 	private Response(int code, T data){
 		this.code = code;
 		this.data = data;
 		this.chains = RemoteChain.CHAIN.get();
+		RemoteChain.CHAIN.remove();
 	}
 
 	private Response(int code, T data, String msg){
@@ -44,12 +46,14 @@ public class Response<T> {
 		this.data = data;
 		this.msg = msg;
 		this.chains = RemoteChain.CHAIN.get();
+		RemoteChain.CHAIN.remove();
 	}
 
 	public Response(ResponseCode responseCode){
 		this.code = responseCode.getCode();
 		this.msg = responseCode.getDesc();
 		this.chains = RemoteChain.CHAIN.get();
+		RemoteChain.CHAIN.remove();
 	}
 
 	public Response(ResponseCode responseCode, T data){
@@ -57,6 +61,7 @@ public class Response<T> {
 		this.msg = responseCode.getDesc();
 		this.data = data;
 		this.chains = RemoteChain.CHAIN.get();
+		RemoteChain.CHAIN.remove();
 	}
 
 	@Override

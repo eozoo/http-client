@@ -97,7 +97,10 @@ public class RemoteChain {
     }
 
     public static void appendChain(boolean success, String name, String url, long cost, int httpCode, String code, ArrayList<RemoteChain> next){
-        String realUrl = url.substring(0, url.indexOf("?"));
+        int index = url.indexOf("?");
+        if(index != -1){
+            url = url.substring(0, index);
+        }
 
         ArrayList<RemoteChain> chainList = CHAIN.get();
         if(chainList == null){
@@ -105,16 +108,17 @@ public class RemoteChain {
             CHAIN.set(chainList);
         }else{
             RemoteChain preChain = chainList.get(chainList.size() - 1);
-            if(realUrl.equals(preChain.getUrl())){
+            if(url.equals(preChain.getUrl())){
                 preChain.increaseCount();
                 preChain.increaseCost(cost);
-            }
-            if(success){
-                preChain.increaseSuccs();
-            }else{
-                // 只在失败时更新code
-                preChain.setHttpCode(httpCode);
-                preChain.setCode(code);
+                if(success){
+                    preChain.increaseSuccs();
+                }else{
+                    // 只在失败时更新code
+                    preChain.setHttpCode(httpCode);
+                    preChain.setCode(code);
+                }
+                return;
             }
         }
 
