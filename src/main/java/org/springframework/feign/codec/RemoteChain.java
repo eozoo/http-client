@@ -88,8 +88,9 @@ public class RemoteChain {
             for (int i = 0; i < chains.size(); i++) {
                 RemoteChain chain = chains.get(i);
                 String newPrefix = prefix + (i == chains.size() - 1 ? "└─ " : "├─ ");
-                builder.append(newPrefix).append(chain.getDetail()).append("\n");
+                builder.append(newPrefix).append(chain.getDetail());
                 if (chain.getChildren() != null) {
+                    builder.append("\n");
                     buildeTree(prefix + (i == chains.size() - 1 ? "    " : "│   "), chain.getChildren(), builder);
                 }
             }
