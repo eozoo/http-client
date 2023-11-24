@@ -31,7 +31,7 @@ public class Response<T> {
 	private List<RemoteChain> chains;
 
 	public Response(){
-
+		// jackson会反序列化响应的chains
 	}
 
 	private Response(int code, T data){
