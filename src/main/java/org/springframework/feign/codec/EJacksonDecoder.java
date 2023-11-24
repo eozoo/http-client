@@ -57,7 +57,8 @@ public class EJacksonDecoder implements FeignDecoder {
             Object obj = mapper.readValue(reader, mapper.constructType(type));
             if(org.springframework.feign.codec.Response.class.isAssignableFrom(obj.getClass())){
                 org.springframework.feign.codec.Response resp = (org.springframework.feign.codec.Response)obj;
-                RemoteChain.appendChain(true, name, url, cost, httpCode, String.valueOf(resp.getCode()), resp.getChains());
+                boolean success = ResponseCode.OK.getCode() != resp.getCode();
+                RemoteChain.appendChain(success, name, url, cost, httpCode, String.valueOf(resp.getCode()), resp.getChains());
                 logger.info(">< remote   {}|{} {}ms {}", httpCode, resp.getCode(), cost, url);
 ;            }else{
                 RemoteChain.appendChain(true, name, url, cost, httpCode, "?", null);

@@ -56,7 +56,7 @@ public class ResponseDecoder implements FeignDecoder {
             org.springframework.feign.codec.Response<?> resp =
                     mapper.readValue(reader, org.springframework.feign.codec.Response.class);
             if(ResponseCode.OK.getCode() != resp.getCode()){
-                RemoteChain.appendChain(true, name, url, cost, httpCode, String.valueOf(resp.getCode()), resp.getChains());
+                RemoteChain.appendChain(false, name, url, cost, httpCode, String.valueOf(resp.getCode()), resp.getChains());
                 logger.info(">< remote   {}|{} {}ms {}", httpCode, resp.getCode(), cost, url);
                 throw new RemoteException(resp.getCode() + ", " + resp.getMsg());
             }
