@@ -38,6 +38,7 @@ public class Response<T> {
 		this.code = code;
 		this.data = data;
 		RemoteChainHolder holder = RemoteChain.CHAIN.get();
+		RemoteChain.CHAIN.remove(); // 避免一种场景：同一个请求id重复调用
 		if(holder != null){
 			this.chains = holder.getChains();
 		}
@@ -57,6 +58,7 @@ public class Response<T> {
 		this.data = data;
 		this.msg = msg;
 		RemoteChainHolder holder = RemoteChain.CHAIN.get();
+		RemoteChain.CHAIN.remove();
 		if(holder != null){
 			this.chains = holder.getChains();
 		}
@@ -75,6 +77,7 @@ public class Response<T> {
 		this.code = responseCode.getCode();
 		this.msg = responseCode.getDesc();
 		RemoteChainHolder holder = RemoteChain.CHAIN.get();
+		RemoteChain.CHAIN.remove();
 		if(holder != null){
 			this.chains = holder.getChains();
 		}
@@ -94,6 +97,7 @@ public class Response<T> {
 		this.msg = responseCode.getDesc();
 		this.data = data;
 		RemoteChainHolder holder = RemoteChain.CHAIN.get();
+		RemoteChain.CHAIN.remove();
 		if(holder != null){
 			this.chains = holder.getChains();
 		}
