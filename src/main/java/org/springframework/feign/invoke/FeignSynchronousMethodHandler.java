@@ -97,8 +97,8 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
             response = client.execute(request, options);
         } catch (IOException e) {
             long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-            RemoteChain.appendChain(false, name, url, cost, -1, "E1", null);
-            throw new RemoteException(format("remote failed %sms %s ", cost, url), e);
+            RemoteChain.appendChain(false, name, url, cost, -1, "?", null);
+            throw new RemoteException(format("remote[%s] failed %sms %s ", -1, cost, url), e);
         }
 
         long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
@@ -122,21 +122,14 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
             }
 
             if (status >= 200 && status < 300) {
-                try {
-                    return decoder.decode(response, metadata.returnType(), name, url, cost, status, logger);
-                } catch (FeignException e) {
-                    RemoteChain.appendChain(false, name, url, cost, status, "E3", null);
-                    throw e;
-                } catch (RuntimeException e) {
-                    RemoteChain.appendChain(false, name, url, cost, status, "E3", null);
-                    throw new DecodeException(e.getMessage(), e);
-                }
+                return decoder.decode(response, metadata.returnType(), name, url, cost, status, logger);
             }
-            RemoteChain.appendChain(false, name, url, cost, status, "E2", null);
+
+            RemoteChain.appendChain(false, name, url, cost, status, "?", null);
             throw new RemoteException(format("remote[%s] %sms %s", status, cost, url));
-        } catch (IOException e) {
-            RemoteChain.appendChain(false, name, url, cost, -2, "E2", null);
-            throw new RemoteException(format("remote failed %sms %s ", cost, url), e);
+        } catch (Exception e) {
+            RemoteChain.appendChain(false, name, url, cost, -2, "?", null);
+            throw new RemoteException(format("remote[%s] failed %sms %s ", -2, cost, url), e);
         } finally {
             if (shouldClose) {
                 ensureClosed(response.body());

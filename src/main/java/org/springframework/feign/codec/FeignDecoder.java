@@ -17,7 +17,7 @@ import java.lang.reflect.Type;
  */
 public interface FeignDecoder {
 
-    Object decode(Response response, Type type, String name, String url, long cost, int httpCode, org.slf4j.Logger logger) throws IOException, DecodeException, FeignException;
+    Object decode(Response response, Type type, String name, String url, long cost, int httpCode, org.slf4j.Logger logger) throws Exception;
 
     class StringDecoder implements FeignDecoder {
 
