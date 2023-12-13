@@ -1,7 +1,6 @@
 package org.springframework.feign.invoke;
 
 import feign.*;
-import feign.codec.DecodeException;
 import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.codec.RemoteChain;
 import org.springframework.feign.invoke.template.FeignTemplateFactory;
@@ -105,7 +104,7 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
         int status = response.status();
         boolean shouldClose = true;
         try {
-            // Feign自带的Response
+            // Feign对于Http响应的描述类，也可以直接定义为接口方法的返回类型
             if (Response.class == metadata.returnType()) {
                 if (response.body() == null) {
                     return response;

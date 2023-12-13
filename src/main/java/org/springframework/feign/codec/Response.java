@@ -31,38 +31,21 @@ public class Response<T> {
 	private List<RemoteChain> chains;
 
 	public Response(){
-		// jackson会反序列化响应的chains
-	}
-
-	private Response(int code, T data){
-		this.code = code;
-		this.data = data;
-		RemoteChainHolder holder = RemoteChain.CHAIN.get();
-		RemoteChain.CHAIN.remove(); // 避免一种场景：同一个请求id重复调用
-		if(holder != null){
-			this.chains = holder.getChains();
-		}
-		String threadName = Thread.currentThread().getName();
-		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.remove(threadName);
-		if(chainMap != null){
-			if(this.chains == null){
-				this.chains = chainMap.values().stream().toList();
-			}else{
-				this.chains.addAll(chainMap.values());
-			}
-		}
+		// 收到响应时会自动进行json反序列化，直接获取chains
 	}
 
 	private Response(int code, T data, String msg){
 		this.code = code;
 		this.data = data;
 		this.msg = msg;
-		RemoteChainHolder holder = RemoteChain.CHAIN.get();
+
+		RemoteChainHolder holder = RemoteChain.CHAIN.get(); // 当前请求的同步远程调用记录
 		RemoteChain.CHAIN.remove();
 		if(holder != null){
 			this.chains = holder.getChains();
 		}
-		String threadName = Thread.currentThread().getName();
+
+		String threadName = Thread.currentThread().getName(); // 请求对应的异步远程调用记录
 		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.remove(threadName);
 		if(chainMap != null){
 			if(this.chains == null){
@@ -71,45 +54,18 @@ public class Response<T> {
 				this.chains.addAll(chainMap.values());
 			}
 		}
+	}
+
+	private Response(int code, T data){
+		this(code, data, null);
 	}
 
 	public Response(ResponseCode responseCode){
-		this.code = responseCode.getCode();
-		this.msg = responseCode.getDesc();
-		RemoteChainHolder holder = RemoteChain.CHAIN.get();
-		RemoteChain.CHAIN.remove();
-		if(holder != null){
-			this.chains = holder.getChains();
-		}
-		String threadName = Thread.currentThread().getName();
-		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.remove(threadName);
-		if(chainMap != null){
-			if(this.chains == null){
-				this.chains = chainMap.values().stream().toList();
-			}else{
-				this.chains.addAll(chainMap.values());
-			}
-		}
+		this(responseCode.getCode(), null, responseCode.getDesc());
 	}
 
 	public Response(ResponseCode responseCode, T data){
-		this.code = responseCode.getCode();
-		this.msg = responseCode.getDesc();
-		this.data = data;
-		RemoteChainHolder holder = RemoteChain.CHAIN.get();
-		RemoteChain.CHAIN.remove();
-		if(holder != null){
-			this.chains = holder.getChains();
-		}
-		String threadName = Thread.currentThread().getName();
-		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.remove(threadName);
-		if(chainMap != null){
-			if(this.chains == null){
-				this.chains = chainMap.values().stream().toList();
-			}else{
-				this.chains.addAll(chainMap.values());
-			}
-		}
+		this(responseCode.getCode(), data, responseCode.getDesc());
 	}
 
 	@Override

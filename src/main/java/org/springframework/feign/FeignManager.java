@@ -72,8 +72,7 @@ public class FeignManager {
         Assert.notNull(feign, clazz + " is not a FeignClient");
 
         Logger logger = LoggerFactory.getLogger(feign.logger());
-        return builder(feign).
-                target(clazz, url, null, applicationContext, valueResolver, logger);
+        return builder(feign).target(clazz, url, null, applicationContext, valueResolver, logger);
     }
 
     @SuppressWarnings("unchecked")
@@ -88,8 +87,7 @@ public class FeignManager {
         }
 
         Logger logger = LoggerFactory.getLogger(feign.logger());
-        T created = builder(feign).
-                target(clazz, url, null, applicationContext, valueResolver, logger);
+        T created = builder(feign).target(clazz, url, null, applicationContext, valueResolver, logger);
         T previous = (T) localFeigns.put(key, created);
         if (previous != null) {
             return previous;

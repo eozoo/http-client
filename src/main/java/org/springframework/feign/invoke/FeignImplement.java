@@ -46,6 +46,7 @@ public class FeignImplement extends Feign {
                 methodToHandler.put(method, nameToHandler.get(Feign.configKey(target.type(), method)));
             }
         }
+
         InvocationHandler handler = factory.create(target, methodToHandler);
         T proxy = (T) Proxy.newProxyInstance(target.type().getClassLoader(), new Class<?>[]{target.type()}, handler);
 

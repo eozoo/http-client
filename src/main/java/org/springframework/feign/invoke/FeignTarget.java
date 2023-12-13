@@ -75,9 +75,9 @@ public class FeignTarget<T> implements Target<T> {
     @Override
     public int hashCode() {
         int result = 17;
-        result = 31 * result + type.hashCode();
-        result = 31 * result + name.hashCode();
-        result = 31 * result + url.hashCode();
+        result = 3 * result + type.hashCode();
+        result = 5 * result + name.hashCode();
+        result = 7 * result + url.hashCode();
         return result;
     }
 

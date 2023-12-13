@@ -53,11 +53,11 @@ public class RemoteChain {
 
     @JsonIgnore
     @JSONField(serialize = false)
-    private String code;
+    private int httpCode;
 
     @JsonIgnore
     @JSONField(serialize = false)
-    private int httpCode;
+    private String code;
 
     private String detail;
 
@@ -119,6 +119,7 @@ public class RemoteChain {
             return;
         }
 
+        // 去掉url中的参数
         int index = url.indexOf("?");
         if(index != -1){
             url = url.substring(0, index);
@@ -130,9 +131,10 @@ public class RemoteChain {
             if(remoteChainHolder == null){
                 remoteChainHolder = new RemoteChainHolder(threadName);
                 CHAIN.set(remoteChainHolder);
-                // 这里不能清除ASYNC_CHAIN，不然第一个同步远程调用必然会清掉所有远程调用记录
-                // 但不删的话，如果远程调用全是异步，那么又会漏删ASYNC_CHAIN，所以要在response中补刀
+                // 这里不能清除ASYNC_CHAIN，不然第一个同步远程调用肯定会清掉所有已经远程调用过的记录
+                // 但不删的话，如果远程调用全是异步，那么又会漏删ASYNC_CHAIN，所以在response中也要兜底删除
             }else if(!remoteChainHolder.getHolderName().equals(threadName)){
+                // 说明线程被复用了，前面的请求已经结束了
                 remoteChainHolder = new RemoteChainHolder(threadName);
                 CHAIN.set(remoteChainHolder);
                 ASYNC_CHAIN.remove(threadName);
@@ -146,14 +148,14 @@ public class RemoteChain {
 
             if(!chainList.isEmpty()){
                 RemoteChain lastChain = chainList.get(chainList.size() - 1);
-                // 去掉参数，重复的url只累计次数，也可能参数不同调用链不一样，也就忽略了
+                // 去掉参数，如果url一样则累计次数（这里忽略了一种场景：参数不同调用链不一样）
                 if(url.equals(lastChain.getUrl())){
                     lastChain.increaseCount();
                     lastChain.sumCost(cost);
                     if(success){
                         lastChain.increaseSuccs();
                     }else{
-                        // 累计次数时，如果失败就更新下code，如果不同参数失败的code不一样，只能看的最后一个
+                        // 累计次数时，如果失败则更新code（所以只能看的最后一次失败的code）
                         lastChain.setHttpCode(httpCode);
                         lastChain.setCode(code);
                     }
@@ -161,8 +163,8 @@ public class RemoteChain {
                 }
             }
             chainList.add(newChain(success, name, url, cost, httpCode, code, next));
-        }else if(threadName.endsWith("-async")){
-            // 如果是servlet子线程，则尝试记到全局Map中，如果不存在就忽略（可能被servlet线程清掉了）
+        }else if(threadName.endsWith("-async")){ // 约定对于请求处理的异步线程，以-async作为线程名后缀
+            // 如果是servlet子线程，则尝试记到全局Map中（如果不存在，则可能是servlet请求处理已经结束而被清除了，所以忽略）
             threadName = threadName.substring(0, threadName.length() - 6);
             Map<String, RemoteChain> chainMap = ASYNC_CHAIN.get(threadName);
             if(chainMap == null){
@@ -174,6 +176,7 @@ public class RemoteChain {
                 return;
             }
 
+            // 异步调用在开始时已经记录了，这里直接累计就行
             if(success){
                 chain.increaseSuccs();
             }

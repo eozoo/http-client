@@ -35,13 +35,14 @@ public class FeignBeanDefinitionRegistrar implements ImportBeanDefinitionRegistr
 					continue;
 				}
 
-				BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(clazz); 
+				BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(clazz);
+
 				GenericBeanDefinition beanDefinition = (GenericBeanDefinition)builder.getBeanDefinition();
-				
-				beanDefinition.setAutowireMode(GenericBeanDefinition.AUTOWIRE_BY_TYPE); 
+				beanDefinition.setAutowireMode(GenericBeanDefinition.AUTOWIRE_BY_TYPE);
 				beanDefinition.getPropertyValues().add("feignClass", clazz);
 				beanDefinition.setBeanClass(FeignFactory.class);
-				registry.registerBeanDefinition(clazz.getSimpleName(), beanDefinition); 
+
+				registry.registerBeanDefinition(clazz.getSimpleName(), beanDefinition);
 			}
 		}
 	}
