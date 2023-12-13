@@ -8,6 +8,4 @@ spring-feign
 
 - 使用文档：https://shanhm1991.github.io/2021/05/05/20210505/
 
-- 使用示例：https://github.com/shanhm1991/spring-feign-demo
-
 - 联系：shanhm1991@163.com
