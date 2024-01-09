@@ -18,14 +18,17 @@ public class Response<T> {
 	/** 请求Id */
 	private String requestId;
 
-	/** 响应描述 */
-	private String msg;
-
 	/** 响应码 */
 	private int code;
 
 	/** 响应数据 */
 	private T data;
+
+	/** 响应描述 */
+	private String msg;
+
+	/** 错误堆栈信息 */
+	private List<String> cause;
 
 	/** 调用链 **/
 	private List<RemoteChain> chains;
