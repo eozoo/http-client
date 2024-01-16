@@ -2,14 +2,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>io.github.shanhm1991</groupId>
+	<groupId>com.cowave.tools</groupId>
 	<artifactId>spring-feign</artifactId>
 	<version>2.7.0</version>
 	<packaging>jar</packaging>
 
 	<name>spring-feign</name>
 	<description>A simple http calling tool, adapted based on netflix-feign</description>
-	<url>https://github.com/shanhm1991/spring-feign</url>
+	<url>https://gitlab.cowave.com/commons/tools/spring-feign</url>
 
 	<licenses>
 		<license>
@@ -21,13 +21,13 @@
 
 	<issueManagement>
 		<system>github</system>
-		<url>https://github.com/shanhm1991/spring-feign/issues</url>
+		<url>https://gitlab.cowave.com/commons/tools/spring-feign/issues</url>
 	</issueManagement>
 
 	<scm>
-		<connection>scm:git:https://github.com/shanhm1991/spring-feign.git</connection>
-		<developerConnection>scm:git:https://github.com/shanhm1991/spring-feign.git</developerConnection>
-		<url>https://github.com/shanhm1991/spring-feign</url>
+		<connection>scm:git:https://gitlab.cowave.com/commons/tools/spring-feign.git</connection>
+		<developerConnection>scm:git:https://gitlab.cowave.com/commons/tools/spring-feign.git</developerConnection>
+		<url>https://gitlab.cowave.com/commons/tools/spring-feign</url>
 	</scm>
 
 	<developers>
@@ -121,12 +121,16 @@
 
 	<distributionManagement>
 		<repository>
-			<id>ossrh</id>
-			<url>https://s01.oss.sonatype.org/content/repositories/releases/</url>
+			<id>cowave</id>
+			<name>releases</name>
+			<url>http://10.64.4.74:8081/repository/maven-releases/</url>
+			<uniqueVersion>true</uniqueVersion>
 		</repository>
 		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+			<id>cowave</id>
+			<name>snapshots</name>
+			<url>http://10.64.4.74:8081/repository/maven-snapshots/</url>
+			<uniqueVersion>true</uniqueVersion>
 		</snapshotRepository>
 	</distributionManagement>
 
