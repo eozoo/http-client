@@ -71,6 +71,10 @@ public class Response<T> {
 		this(responseCode.getCode(), data, responseCode.getDesc());
 	}
 
+	public Response(ResponseCode responseCode, T data, String msg){
+		this(responseCode.getCode(), data, msg);
+	}
+
 	@Override
 	public String toString() {
 		return "{requestId=" + requestId + ", code=" + code + ", msg=" + msg + ", data=" + data + "}";
