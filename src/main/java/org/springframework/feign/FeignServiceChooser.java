@@ -5,7 +5,7 @@ package org.springframework.feign;
  * @author shanhuiming
  *
  */
-public interface NameServiceChooser {
+public interface FeignServiceChooser {
 
     String choose(String name);
 }

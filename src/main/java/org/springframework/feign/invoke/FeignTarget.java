@@ -4,7 +4,7 @@ import feign.Request;
 import feign.RequestTemplate;
 import feign.Target;
 import org.springframework.context.ApplicationContext;
-import org.springframework.feign.NameServiceChooser;
+import org.springframework.feign.FeignServiceChooser;
 import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 
@@ -48,7 +48,7 @@ public class FeignTarget<T> implements Target<T> {
     public Request apply(RequestTemplate request) {
         String prasedName = "";
         if(StringUtils.hasText(name)){
-            NameServiceChooser serviceChooser = applicationContext.getBean(NameServiceChooser.class);
+            FeignServiceChooser serviceChooser = applicationContext.getBean(FeignServiceChooser.class);
             prasedName = serviceChooser.choose(name);
         }
 
