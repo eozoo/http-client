@@ -64,7 +64,7 @@ public class DefaultRetryer implements Retryer{
      * @return time in nanoseconds from now until the next attempt.
      */
     long nextMaxInterval() {
-        long interval = (long) (period * Math.pow(1.5, attempt - 1));
+        long interval = (long) (period * Math.pow(1.5, attempt - 1.0));
         return interval > maxPeriod ? maxPeriod : interval;
     }
 
