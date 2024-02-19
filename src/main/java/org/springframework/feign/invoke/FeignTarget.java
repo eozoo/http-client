@@ -8,8 +8,6 @@ import org.springframework.feign.FeignServiceChooser;
 import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 
-import static java.lang.String.format;
-
 /**
  *
  * @author shanhuiming
