@@ -8,6 +8,8 @@ import org.springframework.feign.FeignServiceChooser;
 import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 
+import static java.lang.String.format;
+
 /**
  *
  * @author shanhuiming
@@ -57,9 +59,12 @@ public class FeignTarget<T> implements Target<T> {
             prasedUrl = valueResolver.resolveStringValue(url);
         }
 
-        String prased = prasedName + prasedUrl;
+        String parsed = prasedName + prasedUrl;
         if (request.url().indexOf("http") != 0) {
-            request.insert(0, prased);
+            if(parsed.indexOf("http") != 0){
+                throw new RemoteException("remote url reserve failed, " + parsed);
+            }
+            request.insert(0, parsed);
         }
         return request.request();
     }
