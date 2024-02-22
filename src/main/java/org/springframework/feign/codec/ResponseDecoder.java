@@ -3,7 +3,7 @@ package org.springframework.feign.codec;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.Module;
 import feign.Response;
-import org.springframework.feign.invoke.RemoteException;
+import org.springframework.feign.invoke.RemoteAssertsException;
 
 import java.io.BufferedReader;
 import java.io.Reader;
@@ -54,8 +54,8 @@ public class ResponseDecoder implements FeignDecoder {
                 mapper.readValue(reader, org.springframework.feign.codec.Response.class);
         if(ResponseCode.OK.getCode() != resp.getCode()){
             RemoteChain.appendChain(false, name, url, cost, httpCode, String.valueOf(resp.getCode()), resp.getChains());
-            logger.info(">< remote   {}|{} {}ms {}", httpCode, resp.getCode(), cost, url);
-            throw new RemoteException(resp.getCode() + ", " + resp.getMsg());
+            logger.error(">< remote   {}|{} {}ms {}", httpCode, resp.getCode(), cost, url);
+            throw new RemoteAssertsException(resp.getMsg());
         }
 
         if (void.class == type) {
