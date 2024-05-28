@@ -140,6 +140,12 @@ public class Response<T> {
 		/** 列表数据 */
 		private Collection<E> list;
 
+		/** 页码 */
+		private int page;
+
+		/** 页数 */
+		private int pageSize;
+
 		public Page(){
 
 		}
@@ -168,6 +174,30 @@ public class Response<T> {
 
 		public void setList(Collection<E> list) {
 			this.list = list;
+		}
+
+		public int getPage() {
+			return page;
+		}
+
+		public int getPageSize() {
+			return pageSize;
+		}
+
+		public void setPage(int page) {
+			this.page = page;
+		}
+
+		public void setPageSize(int pageSize) {
+			this.pageSize = pageSize;
+		}
+
+		public void setPage(long page) {
+			this.page = (int)page;
+		}
+
+		public void setPageSize(long pageSize) {
+			this.pageSize = (int)pageSize;
 		}
 
 		@Override
