@@ -143,8 +143,11 @@ public class Response<T> {
 		/** 页码 */
 		private int page;
 
-		/** 页数 */
+		/** 每页行数 */
 		private int pageSize;
+
+		/** 总页数 */
+		private int totalPage;
 
 		public Page(){
 
@@ -164,8 +167,34 @@ public class Response<T> {
 			return total;
 		}
 
+		@Deprecated
 		public void setTotalRows(int total) {
 			this.total = total;
+		}
+
+		@Deprecated
+		public void setTotalRows(long total) {
+			this.total = (int)total;
+		}
+
+		public void setTotal(int total) {
+			this.total = total;
+		}
+
+		public void setTotal(long total) {
+			this.total = (int)total;
+		}
+
+		public int getTotalPage() {
+			return totalPage;
+		}
+
+		public void setTotalPage(int totalPage) {
+			this.totalPage = totalPage;
+		}
+
+		public void setTotalPage(long totalPage) {
+			this.totalPage = (int)totalPage;
 		}
 
 		public Collection<E> getList() {
