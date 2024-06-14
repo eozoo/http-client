@@ -1,6 +1,6 @@
 package org.springframework.feign.codec;
 
-import javax.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 
 /**
  * @author shanhuiming
@@ -8,25 +8,48 @@ import javax.servlet.http.HttpServletResponse;
 public enum ResponseCode {
 
     /**
-     * 处理成功
+     * 200
      */
-    OK(HttpServletResponse.SC_OK, "Success"),
+    OK(HttpStatus.OK.value(), HttpStatus.OK.getReasonPhrase()),
 
     /**
-     * 需要请求发起方确认是否继续处理的请求
+     * 202
      */
-    ACCEPTED(HttpServletResponse.SC_ACCEPTED, "Accepted"),
+    ACCEPTED(HttpStatus.ACCEPTED.value(), HttpStatus.ACCEPTED.getReasonPhrase()),
 
-    BAD_REQUEST(HttpServletResponse.SC_BAD_REQUEST, "Bad Request"),
+    /**
+     * 400
+     */
+    BAD_REQUEST(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase()),
 
-    UNAUTHORIZED(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"),
+    /**
+     * 401
+     */
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED.getReasonPhrase()),
 
-    FORBIDDEN(HttpServletResponse.SC_FORBIDDEN, "Forbidden"),
+    /**
+     * 403
+     */
+    FORBIDDEN(HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN.getReasonPhrase()),
 
+    /**
+     * 429
+     */
+    TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS.value(), HttpStatus.TOO_MANY_REQUESTS.getReasonPhrase()),
+
+    /**
+     * 498
+     */
     TOKEN_INVALID_OR_EXPIRED(498, "Token changed or expired"),
 
-    INTERNAL_SERVER_ERROR(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "System Error"),
+    /**
+     * 500
+     */
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase()),
 
+    /**
+     * 597
+     */
     SYS_ERROR(597, "Sys Error");
 
     private final int code;
