@@ -2,6 +2,7 @@ package org.springframework.feign.invoke;
 
 import feign.*;
 import org.springframework.feign.codec.FeignDecoder;
+import org.springframework.feign.codec.HttpResponse;
 import org.springframework.feign.codec.RemoteChain;
 import org.springframework.feign.invoke.template.FeignTemplateFactory;
 import org.springframework.web.context.request.RequestAttributes;
@@ -104,7 +105,7 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
         int status = response.status();
         boolean shouldClose = true;
         try {
-            // Feign对于Http响应的描述类，也可以直接定义为接口方法的返回类型
+            // Feign的Http响应
             if (Response.class == metadata.returnType()) {
                 if (response.body() == null) {
                     return response;
@@ -120,6 +121,12 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
                 return Response.create(status, response.reason(), response.headers(), bodyData);
             }
 
+            // 自定义的Http响应
+            if (HttpResponse.class == metadata.returnType()) {
+                return new HttpResponse(response);
+            }
+
+            // 业务Response
             if (status >= 200 && status < 300) {
                 return decoder.decode(response, metadata.returnType(), name, url, cost, status, logger);
             }
