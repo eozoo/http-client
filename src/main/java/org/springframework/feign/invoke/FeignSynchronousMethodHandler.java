@@ -123,7 +123,7 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
 
             // 自定义的Http响应
             if (HttpResponse.class == metadata.returnType()) {
-                return new HttpResponse(response);
+                return new HttpResponse(response, logger, cost, url);
             }
 
             // 业务Response

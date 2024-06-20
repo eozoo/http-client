@@ -4,6 +4,7 @@ import feign.Response;
 import feign.Util;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -29,7 +30,13 @@ public class HttpResponse {
 
     private String data;
 
-    public HttpResponse(feign.Response response) throws IOException {
+    private Logger logger;
+
+    private long cost;
+
+    private String url;
+
+    public HttpResponse(feign.Response response, Logger logger, long cost, String url) throws IOException {
         this.status = response.status();
         this.reason = response.reason();
         this.headers = response.headers();
@@ -38,5 +45,6 @@ public class HttpResponse {
             byte[] bodyData = Util.toByteArray(response.body().asInputStream());
             this.data = new String(bodyData, StandardCharsets.UTF_8);
         }
+        logger.info(">< remote   {} {}ms {}", status, cost, url);
     }
 }
