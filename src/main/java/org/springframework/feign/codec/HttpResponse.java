@@ -20,6 +20,8 @@ import java.util.Map;
 @Data
 public class HttpResponse {
 
+    private String requestId;
+
     private int status;
 
     private String reason;
