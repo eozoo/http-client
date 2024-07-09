@@ -1,6 +1,7 @@
 package org.springframework.feign.invoke;
 
 import feign.*;
+import org.springframework.feign.FeignExceptionHandler;
 import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.codec.HttpResponse;
 import org.springframework.feign.codec.RemoteChain;
@@ -34,13 +35,17 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
     private final Request.Options options;
     private final FeignDecoder decoder;
 
+    private final FeignExceptionHandler exceptionHandler;
+
     public FeignSynchronousMethodHandler(Target<?> target, Client client,
                                          org.springframework.feign.retryer.Retryer retryer,
                                          List<RequestInterceptor> requestInterceptors,
                                          MethodMetadata metadata,
                                          FeignTemplateFactory buildTemplateFromArgs,
                                          Request.Options options,
-                                         FeignDecoder decoder, org.slf4j.Logger logger) {
+                                         FeignDecoder decoder,
+                                         org.slf4j.Logger logger,
+                                         FeignExceptionHandler exceptionHandler) {
         this.target = checkNotNull(target, "target");
         this.client = checkNotNull(client, "client for %s", target);
         this.retryer = checkNotNull(retryer, "retryer for %s", target);
@@ -50,6 +55,7 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
         this.options = checkNotNull(options, "options for %s", target);
         this.decoder = checkNotNull(decoder, "decoder for %s", target);
         this.logger = checkNotNull(logger, "decoder for %s", target);
+        this.exceptionHandler = exceptionHandler;
     }
 
     @Override
@@ -98,7 +104,11 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
         } catch (IOException e) {
             long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
             RemoteChain.appendChain(false, name, url, cost, -1, "?", null);
-            throw new RemoteException(format("remote[%s] failed %sms %s ", -1, cost, url), e);
+            RemoteException ex = new RemoteException(format("remote[%s] failed %sms %s ", -1, cost, url), e);
+            if(exceptionHandler != null){
+                exceptionHandler.handle(ex);
+            }
+            throw ex;
         }
 
         long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
@@ -133,9 +143,19 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
 
             RemoteChain.appendChain(false, name, url, cost, status, "?", null);
             throw new RemoteException(format("remote[%s] %sms %s", status, cost, url));
+
+        } catch(RemoteException e) {
+            if(exceptionHandler != null){
+                exceptionHandler.handle(e);
+            }
+            throw e;
         } catch (Exception e) {
             RemoteChain.appendChain(false, name, url, cost, -2, "?", null);
-            throw new RemoteException(format("remote[%s] failed %sms %s ", -2, cost, url), e);
+            RemoteException ex = new RemoteException(format("remote[%s] failed %sms %s ", -2, cost, url), e);
+            if(exceptionHandler != null){
+                exceptionHandler.handle(ex);
+            }
+            throw ex;
         } finally {
             if (shouldClose) {
                 ensureClosed(response.body());

@@ -119,6 +119,13 @@ public class FeignManager {
             builder.requestInterceptor(requestInterceptor);
         }
 
+        String[] handlers = applicationContext.getBeanNamesForType(FeignExceptionHandler.class);
+        if(handlers.length > 0) {
+            String handler = handlers[0];
+            FeignExceptionHandler exceptionHandler = applicationContext.getBean(handler, FeignExceptionHandler.class);
+            builder.exceptionHandler(exceptionHandler);
+        }
+
         try{
             builder.encoder(encoder(feign)).decoder(decoder(feign));
             Class<?> sslSocketFactoryClass = feign.sslSocketFactory();

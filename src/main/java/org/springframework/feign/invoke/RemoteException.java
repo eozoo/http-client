@@ -7,8 +7,6 @@ package org.springframework.feign.invoke;
  */
 public class RemoteException extends RuntimeException {
 
-    private static final long serialVersionUID = 2986068598247844886L;
-
     public RemoteException(String message) {
         super(message);
     }
