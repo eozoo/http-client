@@ -55,7 +55,7 @@ public class ResponseDecoder implements FeignDecoder {
         if(ResponseCode.OK.getCode() != resp.getCode()){
             RemoteChain.appendChain(false, name, url, cost, httpCode, String.valueOf(resp.getCode()), resp.getChains());
             logger.error(">< remote   {}|{} {}ms {}", httpCode, resp.getCode(), cost, url);
-            throw new RemoteAssertsException(resp.getMsg());
+            throw new RemoteAssertsException(url, httpCode, resp.getCode(), resp.getMsg());
         }
 
         if (void.class == type) {

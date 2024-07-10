@@ -60,7 +60,7 @@ public class FeignTarget<T> implements Target<T> {
         String parsed = prasedName + prasedUrl;
         if (request.url().indexOf("http") != 0) {
             if(parsed.indexOf("http") != 0){
-                throw new RemoteException("remote url reserve failed[name=" + name + ", url=" + url + ", parsed=" + parsed + "]");
+                throw new RemoteException(url, -1, -1, "remote url reserve failed[name=" + name + ", url=" + url + ", parsed=" + parsed + "]");
             }
             request.insert(0, parsed);
         }

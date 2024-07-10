@@ -81,6 +81,7 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
         Response response;
         long start = System.nanoTime();
         try {
+            // Deprecated
             RequestAttributes attributes =  RequestContextHolder.getRequestAttributes();
             String threadName = Thread.currentThread().getName();
             if(attributes == null && threadName != null && threadName.endsWith("-async")){
@@ -93,18 +94,19 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
                 if(index != -1){
                     realUrl = realUrl.substring(0, index);
                 }
-
-                RemoteChain chain = RemoteChain.newChain(false, name, realUrl, 0, 0, "?", null);
+                RemoteChain chain = RemoteChain.newChain(false, name, realUrl, 0, 0, "0", null);
                 chain.setCount(new AtomicInteger(0)); // 先减1尝试放进去，然后再统一加1
                 chain.setAsync(true);
                 RemoteChain effectChain = chainMap.computeIfAbsent(realUrl, (key) -> chain);
                 effectChain.increaseCount();
             }
+
+            // http调用
             response = client.execute(request, options);
         } catch (IOException e) {
             long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-            RemoteChain.appendChain(false, name, url, cost, -1, "?", null);
-            RemoteException ex = new RemoteException(format("remote[%s] failed %sms %s ", -1, cost, url), e);
+            RemoteChain.appendChain(false, name, url, cost, -1, "-1", null);
+            RemoteException ex = new RemoteException(url, -1, -1, format("remote[%s] failed %sms %s ", -1, cost, url), e);
             if(exceptionHandler != null){
                 exceptionHandler.handle(ex);
             }
@@ -141,8 +143,8 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
                 return decoder.decode(response, metadata.returnType(), name, url, cost, status, logger);
             }
 
-            RemoteChain.appendChain(false, name, url, cost, status, "?", null);
-            throw new RemoteException(format("remote[%s] %sms %s", status, cost, url));
+            RemoteChain.appendChain(false, name, url, cost, status, "-3", null);
+            throw new RemoteException(url, status, -3, format("remote[%s] %sms %s", -3, cost, url));
 
         } catch(RemoteException e) {
             if(exceptionHandler != null){
@@ -150,8 +152,8 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
             }
             throw e;
         } catch (Exception e) {
-            RemoteChain.appendChain(false, name, url, cost, -2, "?", null);
-            RemoteException ex = new RemoteException(format("remote[%s] failed %sms %s ", -2, cost, url), e);
+            RemoteChain.appendChain(false, name, url, cost, status, "-2", null);
+            RemoteException ex = new RemoteException(url, status, -2, format("remote[%s] failed %sms %s ", -2, cost, url), e);
             if(exceptionHandler != null){
                 exceptionHandler.handle(ex);
             }
