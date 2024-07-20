@@ -1,17 +1,20 @@
 package org.springframework.feign.codec;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  *
  * @author shanhuiming
  *
  */
+@Slf4j
 @Data
 public class Response<T> {
 
@@ -131,6 +134,48 @@ public class Response<T> {
     	}
     	return response;
     }
+
+	public static <E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<E> page){
+		Response<Page<E>> response = new Response<>(ResponseCode.OK);
+		response.setData(new Page<>(page.getRecords(), page.getTotal()));
+		return response;
+	}
+
+	public static <T, E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page, Class<E> clazz){
+		Response<Page<E>> response = new Response<>(ResponseCode.OK);
+		response.setData(new Page<>(copyList(page.getRecords(), clazz), page.getTotal()));
+		return response;
+	}
+
+	public static <T, E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page, Function<T, E> mapper) {
+		Response<Page<E>> response = new Response<>(ResponseCode.OK);
+		response.setData(new Page<>(page.getRecords().stream().map(mapper).toList(), page.getTotal()));
+		return response;
+	}
+
+	public static <T, E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page, Function<T, E> mapper, Predicate<T> filter) {
+		Response<Page<E>> response = new Response<>(ResponseCode.OK);
+		response.setData(new Page<>(page.getRecords().stream().filter(filter).map(mapper).toList(), page.getTotal()));
+		return response;
+	}
+
+	static <E, T> E copyBean(T src, Class<E> clazz) {
+		E target = null;
+		try {
+			target = clazz.getDeclaredConstructor().newInstance();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		BeanUtils.copyProperties(src, target);
+		return target;
+	}
+
+	static <E, T> List<E> copyList(List<T> srcList, Class<E> clazz) {
+		if (CollectionUtils.isEmpty(srcList)) {
+			return Collections.emptyList();
+		}
+		return srcList.stream().map(src -> copyBean(src, clazz)).toList();
+	}
 
 	public static class Page<E> {
 
