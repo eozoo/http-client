@@ -1,10 +1,7 @@
 package org.springframework.feign.codec;
 
-import feign.FeignException;
 import feign.Response;
 import feign.Util;
-import feign.codec.DecodeException;
-import feign.codec.StringDecoder;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -23,7 +20,7 @@ public interface FeignDecoder {
 
         @Override
         public Object decode(Response response, Type type, String name, String url, long cost, int httpCode, org.slf4j.Logger logger) throws IOException {
-            logger.info(">< remote   {}|? {}ms {}", httpCode, cost, url);
+            logger.info(">< {} {}ms {}", httpCode, cost, url);
             if (byte[].class.equals(type)) {
                 return Util.toByteArray(response.body().asInputStream());
             }

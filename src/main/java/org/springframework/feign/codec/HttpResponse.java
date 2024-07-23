@@ -47,6 +47,6 @@ public class HttpResponse {
             byte[] bodyData = Util.toByteArray(response.body().asInputStream());
             this.data = new String(bodyData, StandardCharsets.UTF_8);
         }
-        logger.info(">< remote   {} {}ms {}", status, cost, url);
+        logger.info(">< {} {}ms {}", status, cost, url);
     }
 }

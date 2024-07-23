@@ -54,17 +54,17 @@ public class ResponseDecoder implements FeignDecoder {
                 mapper.readValue(reader, org.springframework.feign.codec.Response.class);
         if(ResponseCode.OK.getCode() != resp.getCode()){
             RemoteChain.appendChain(false, name, url, cost, httpCode, String.valueOf(resp.getCode()), resp.getChains());
-            logger.error(">< remote   {}|{} {}ms {}", httpCode, resp.getCode(), cost, url);
+            logger.error(">< {} {}ms {} {code={}, msg={}}", httpCode, cost, url, resp.getCode(), resp.getMsg());
             throw new RemoteAssertsException(url, httpCode, resp.getCode(), resp.getMsg());
         }
 
         if (void.class == type) {
             RemoteChain.appendChain(true, name, url, cost, httpCode, String.valueOf(resp.getCode()), resp.getChains());
-            logger.info(">< remote   {}|{} {}ms {}", httpCode, resp.getCode(), cost, url);
+            logger.info(">< {} {}ms {} {code={}, msg={}}", httpCode, cost, url, resp.getCode(), resp.getMsg());
             return null;
         }
 
-        logger.info(">< remote   {}|{} {}ms {}", httpCode, resp.getCode(), cost, url);
+        logger.info(">< {} {}ms {} {code={}, msg={}}", httpCode, cost, url, resp.getCode(), resp.getMsg());
         RemoteChain.appendChain(true, name, url, cost, httpCode, String.valueOf(resp.getCode()), resp.getChains());
         String data = mapper.writeValueAsString(resp.getData());
         return mapper.readValue(data, mapper.constructType(type));
