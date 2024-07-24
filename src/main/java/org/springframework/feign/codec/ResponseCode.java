@@ -14,7 +14,7 @@ public interface ResponseCode {
      */
     default int status(){
         return HttpStatus.OK.value();
-    };
+    }
 
     /**
      * 响应码

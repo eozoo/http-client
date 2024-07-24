@@ -66,22 +66,6 @@ public class Response<T> {
 		}
 	}
 
-//	private Response(int code, T data){
-//		this(code, data, null);
-//	}
-//
-//	public Response(ResponseCode responseCode){
-//		this(responseCode.getCode(), null, responseCode.getMsg());
-//	}
-//
-//	public Response(ResponseCode responseCode, T data){
-//		this(responseCode.getCode(), data, responseCode.getMsg());
-//	}
-//
-//	public Response(ResponseCode responseCode, T data, String msg){
-//		this(responseCode.getCode(), data, msg);
-//	}
-
 	@Override
 	public String toString() {
 		return "{code=" + code + ", msg=" + msg + ", data=" + data + "}";
