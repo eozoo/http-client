@@ -71,39 +71,7 @@ public class Response<T> {
 		return "{code=" + code + ", msg=" + msg + ", data=" + data + "}";
 	}
 
-	public static <V> Response<V> success(){
-        return new Response<>(HttpStatus.OK.value(), "success", null);
-    }
-
-	public static <V> Response<V> success(V data){
-        return new Response<>(HttpStatus.OK.value(), "success", data);
-    }
-
-	public static <V> Response<V> success(String msg, V data){
-		return new Response<>(HttpStatus.OK.value(), msg, data);
-	}
-
-	public static <V> Response<V> success(ResponseCode responseCode, V data){
-		Response<V> response = new Response<>(responseCode.code(), responseCode.msg(), data);
-		ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
-		if(attributes != null){
-			HttpServletResponse httpResponse = attributes.getResponse();
-			if(httpResponse != null){
-				httpResponse.setStatus(responseCode.status());
-			}
-		}
-		return response;
-	}
-
-	public static <V> Response<V> error(){
-		return new Response<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), null);
-	}
-
-	public static <V> Response<V> error(String msg){
-		return new Response<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), msg, null);
-	}
-
-	public static <V> Response<V> error(ResponseCode responseCode){
+	public static <V> Response<V> code(ResponseCode responseCode){
 		Response<V> response = new Response<>(responseCode.code(), responseCode.msg(), null);
 		ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
 		if(attributes != null){
@@ -115,7 +83,19 @@ public class Response<T> {
 		return response;
 	}
 
-	public static <V> Response<V> error(ResponseCode responseCode, String msg){
+	public static <V> Response<V> data(ResponseCode responseCode, V data){
+		Response<V> response = new Response<>(responseCode.code(), responseCode.msg(), data);
+		ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
+		if(attributes != null){
+			HttpServletResponse httpResponse = attributes.getResponse();
+			if(httpResponse != null){
+				httpResponse.setStatus(responseCode.status());
+			}
+		}
+		return response;
+	}
+
+	public static <V> Response<V> msg(ResponseCode responseCode, String msg){
 		Response<V> response = new Response<>(responseCode.code(), msg, null);
 		ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
 		if(attributes != null){
@@ -125,6 +105,26 @@ public class Response<T> {
 			}
 		}
 		return response;
+	}
+
+	public static <V> Response<V> success(){
+        return new Response<>(HttpStatus.OK.value(), "success", null);
+    }
+
+	public static <V> Response<V> success(V data){
+        return new Response<>(HttpStatus.OK.value(), "success", data);
+    }
+
+	public static <V> Response<V> success(V data, String msg){
+		return new Response<>(HttpStatus.OK.value(), msg, data);
+	}
+
+	public static <V> Response<V> error(){
+		return new Response<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), null);
+	}
+
+	public static <V> Response<V> error(String msg){
+		return new Response<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), msg, null);
 	}
 
 	public static <E> Response<Page<E>> page(List<E> list){
