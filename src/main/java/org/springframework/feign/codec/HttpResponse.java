@@ -1,7 +1,5 @@
 package org.springframework.feign.codec;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +13,7 @@ import java.util.Arrays;
  * @author shanhuiming
  *
  */
-@Getter
-@Setter
 public class HttpResponse<T> extends ResponseEntity<T> {
-
-    private String requestId;
 
     public HttpResponse(){
         super(HttpStatus.OK);
