@@ -45,14 +45,14 @@ public class HttpResponse<T> extends ResponseEntity<T> {
     /**
      * status=#{HttpCode.status}, body=#{HttpCode.msg}
      */
-    public static HttpResponse<String> code(HttpCode httpCode) {
-        return new HttpResponse<>(httpCode, null, httpCode.getMsg());
+    public static HttpResponse<Object> code(HttpCode httpCode) {
+        return new HttpResponse<>(httpCode, null, null);
     }
 
     /**
      * status=#{HttpCode.status}, body=#{data}
      */
-    public static <V> HttpResponse<V> message(HttpCode httpCode, V data) {
+    public static <V> HttpResponse<V> body(HttpCode httpCode, V data) {
         return new HttpResponse<>(httpCode, null, data);
     }
 
