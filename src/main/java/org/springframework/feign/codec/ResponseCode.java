@@ -19,10 +19,10 @@ public interface ResponseCode {
     /**
      * 响应码
      */
-    int getCode();
+    int code();
 
     /**
      * 响应描述
      */
-    String getMsg();
+    String msg();
 }

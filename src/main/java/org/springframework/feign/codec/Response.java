@@ -84,7 +84,7 @@ public class Response<T> {
 	}
 
 	public static <V> Response<V> success(ResponseCode responseCode, V data){
-		Response<V> response = new Response<>(responseCode.getCode(), responseCode.getMsg(), data);
+		Response<V> response = new Response<>(responseCode.code(), responseCode.msg(), data);
 		ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
 		if(attributes != null){
 			HttpServletResponse httpResponse = attributes.getResponse();
@@ -104,7 +104,7 @@ public class Response<T> {
 	}
 
 	public static <V> Response<V> error(ResponseCode responseCode){
-		Response<V> response = new Response<>(responseCode.getCode(), responseCode.getMsg(), null);
+		Response<V> response = new Response<>(responseCode.code(), responseCode.msg(), null);
 		ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
 		if(attributes != null){
 			HttpServletResponse httpResponse = attributes.getResponse();
@@ -116,7 +116,7 @@ public class Response<T> {
 	}
 
 	public static <V> Response<V> error(ResponseCode responseCode, String msg){
-		Response<V> response = new Response<>(responseCode.getCode(), msg, null);
+		Response<V> response = new Response<>(responseCode.code(), msg, null);
 		ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
 		if(attributes != null){
 			HttpServletResponse httpResponse = attributes.getResponse();
