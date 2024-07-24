@@ -6,11 +6,17 @@ import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.codec.HttpResponse;
 import org.springframework.feign.codec.RemoteChain;
 import org.springframework.feign.invoke.template.FeignTemplateFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -117,28 +123,56 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
         int status = response.status();
         boolean shouldClose = true;
         try {
-            // Feign的Http响应
+            // 1.响应类型: feign.Response
             if (Response.class == metadata.returnType()) {
                 if (response.body() == null) {
+                    logger.info(">< {} {}ms {}", status, cost, url);
                     return response;
                 }
-
                 if (response.body().length() == null || response.body().length() > MAX_RESPONSE_BUFFER_SIZE) {
                     shouldClose = false;
+                    logger.info(">< {} {}ms {}", status, cost, url);
                     return response;
                 }
-
                 // Ensure the response body is disconnected
                 byte[] bodyData = Util.toByteArray(response.body().asInputStream());
+                logger.info(">< {} {}ms {}", status, cost, url);
                 return Response.create(status, response.reason(), response.headers(), bodyData);
             }
 
-            // 自定义的Http响应
-            if (HttpResponse.class == metadata.returnType()) {
-                return new HttpResponse(response, logger, cost, url);
+            // 2.响应类型: org.springframework.http.ResponseEntity
+            if (ResponseEntity.class == metadata.returnType()) {
+                // Header信息
+                HttpHeaders headers = new HttpHeaders();
+                for (Map.Entry<String, Collection<String>> entry : response.headers().entrySet()) {
+                    headers.put(entry.getKey(), entry.getValue().stream().toList());
+                }
+                // 获取响应主体
+                String body = null;
+                if (response.body() != null) {
+                    body = StreamUtils.copyToString(response.body().asInputStream(), StandardCharsets.UTF_8);
+                }
+                logger.info(">< {} {}ms {}", status, cost, url);
+                return new ResponseEntity<>(body, headers, response.status());
             }
 
-            // 业务Response
+            // 3.响应类型: org.springframework.feign.codec.HttpResponse
+            if (HttpResponse.class == metadata.returnType()) {
+                // Header信息
+                HttpHeaders headers = new HttpHeaders();
+                for (Map.Entry<String, Collection<String>> entry : response.headers().entrySet()) {
+                    headers.put(entry.getKey(), entry.getValue().stream().toList());
+                }
+                // 获取响应主体
+                String body = null;
+                if (response.body() != null) {
+                    body = StreamUtils.copyToString(response.body().asInputStream(), StandardCharsets.UTF_8);
+                }
+                logger.info(">< {} {}ms {}", status, cost, url);
+                return new HttpResponse<>(response.status(), headers, body);
+            }
+
+            // 4.交给decoder
             if (status >= 200 && status < 300) {
                 return decoder.decode(response, metadata.returnType(), name, url, cost, status, logger);
             }

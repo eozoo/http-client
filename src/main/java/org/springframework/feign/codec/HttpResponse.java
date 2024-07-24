@@ -1,52 +1,72 @@
 package org.springframework.feign.codec;
 
-import feign.Response;
-import feign.Util;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Map;
+import javax.annotation.Nullable;
+import java.util.Arrays;
 
 /**
  *
  * @author shanhuiming
  *
  */
-@NoArgsConstructor
-@Data
-public class HttpResponse {
+@Getter
+@Setter
+public class HttpResponse<T> extends ResponseEntity<T> {
 
     private String requestId;
 
-    private int status;
+    public HttpResponse(){
+        super(HttpStatus.OK);
+    }
 
-    private String reason;
+    public HttpResponse(int httpStatus, @Nullable MultiValueMap<String, String> headers, @Nullable T body) {
+        super(body, headers, httpStatus);
+    }
 
-    private Map<String, Collection<String>> headers;
+    public HttpResponse(HttpCode httpCode, @Nullable MultiValueMap<String, String> headers, @Nullable T body) {
+        super(body, headers, httpCode.getStatus());
+    }
 
-    private Response.Body body;
+    /**
+     * 设置Http Header
+     */
+    public HttpResponse<T> setHeader(String key, String... values){
+        HttpHeaders headers = new HttpHeaders(this.getHeaders());
+        headers.put(key, Arrays.stream(values).toList());
+        return new HttpResponse<>(this.getStatusCode().value(), headers, this.getBody());
+    }
 
-    private String data;
+    /**
+     * status=#{HttpCode.status}, body=#{HttpCode.msg}
+     */
+    public static HttpResponse<String> code(HttpCode httpCode) {
+        return new HttpResponse<>(httpCode, null, httpCode.getMsg());
+    }
 
-    private Logger logger;
+    /**
+     * status=#{HttpCode.status}, body=#{data}
+     */
+    public static <V> HttpResponse<V> message(HttpCode httpCode, V data) {
+        return new HttpResponse<>(httpCode, null, data);
+    }
 
-    private long cost;
+    /**
+     * status=200, body=null
+     */
+    public static <V> HttpResponse<V> success(){
+        return new HttpResponse<>(ResponseCode.OK, null, null);
+    }
 
-    private String url;
-
-    public HttpResponse(feign.Response response, Logger logger, long cost, String url) throws IOException {
-        this.status = response.status();
-        this.reason = response.reason();
-        this.headers = response.headers();
-        this.body = response.body();
-        if (response.body() != null) {
-            byte[] bodyData = Util.toByteArray(response.body().asInputStream());
-            this.data = new String(bodyData, StandardCharsets.UTF_8);
-        }
-        logger.info(">< {} {}ms {}", status, cost, url);
+    /**
+     * status=200, body=#{data}
+     */
+    public static <V> HttpResponse<V> success(V data) {
+        return new HttpResponse<>(ResponseCode.OK, null, data);
     }
 }
