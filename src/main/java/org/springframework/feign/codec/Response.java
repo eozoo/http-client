@@ -3,8 +3,12 @@ package org.springframework.feign.codec;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -40,10 +44,10 @@ public class Response<T> {
 		// 收到响应时会自动进行json反序列化，直接获取chains
 	}
 
-	private Response(int code, T data, String msg){
+	private Response(int code, String msg, T data){
 		this.code = code;
-		this.data = data;
 		this.msg = msg;
+		this.data = data;
 
 		RemoteChainHolder holder = RemoteChain.CHAIN.get(); // 当前请求的同步远程调用记录
 		RemoteChain.CHAIN.remove();
@@ -62,67 +66,85 @@ public class Response<T> {
 		}
 	}
 
-	private Response(int code, T data){
-		this(code, data, null);
-	}
-
-	public Response(ResponseCode responseCode){
-		this(responseCode.getCode(), null, responseCode.getDesc());
-	}
-
-	public Response(ResponseCode responseCode, T data){
-		this(responseCode.getCode(), data, responseCode.getDesc());
-	}
-
-	public Response(ResponseCode responseCode, T data, String msg){
-		this(responseCode.getCode(), data, msg);
-	}
+//	private Response(int code, T data){
+//		this(code, data, null);
+//	}
+//
+//	public Response(ResponseCode responseCode){
+//		this(responseCode.getCode(), null, responseCode.getMsg());
+//	}
+//
+//	public Response(ResponseCode responseCode, T data){
+//		this(responseCode.getCode(), data, responseCode.getMsg());
+//	}
+//
+//	public Response(ResponseCode responseCode, T data, String msg){
+//		this(responseCode.getCode(), data, msg);
+//	}
 
 	@Override
 	public String toString() {
-		return "{requestId=" + requestId + ", code=" + code + ", msg=" + msg + ", data=" + data + "}";
+		return "{code=" + code + ", msg=" + msg + ", data=" + data + "}";
 	}
 
 	public static <V> Response<V> success(){
-        return new Response<>(ResponseCode.OK);
+        return new Response<>(HttpStatus.OK.value(), "success", null);
     }
 
 	public static <V> Response<V> success(V data){
-        return new Response<>(ResponseCode.OK, data);
+        return new Response<>(HttpStatus.OK.value(), "success", data);
     }
 
 	public static <V> Response<V> success(String msg, V data){
-		Response<V> response = new Response<>(ResponseCode.OK, data);
-		response.msg = msg;
+		return new Response<>(HttpStatus.OK.value(), msg, data);
+	}
+
+	public static <V> Response<V> success(ResponseCode responseCode, V data){
+		Response<V> response = new Response<>(responseCode.getCode(), responseCode.getMsg(), data);
+		ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
+		if(attributes != null){
+			HttpServletResponse httpResponse = attributes.getResponse();
+			if(httpResponse != null){
+				httpResponse.setStatus(responseCode.status());
+			}
+		}
 		return response;
 	}
 
 	public static <V> Response<V> error(){
-		return new Response<>(ResponseCode.INTERNAL_SERVER_ERROR);
-	}
-
-	public static <V> Response<V> error(ResponseCode responseCode){
-		return new Response<>(responseCode);
+		return new Response<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), null);
 	}
 
 	public static <V> Response<V> error(String msg){
-		Response<V> response = new Response<>(ResponseCode.INTERNAL_SERVER_ERROR);
-		response.msg = msg;
+		return new Response<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), msg, null);
+	}
+
+	public static <V> Response<V> error(ResponseCode responseCode){
+		Response<V> response = new Response<>(responseCode.getCode(), responseCode.getMsg(), null);
+		ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
+		if(attributes != null){
+			HttpServletResponse httpResponse = attributes.getResponse();
+			if(httpResponse != null){
+				httpResponse.setStatus(responseCode.status());
+			}
+		}
 		return response;
 	}
 
-	public static <V> Response<V> error(int code, String msg){
-		return new Response<>(code, null, msg);
-	}
-
 	public static <V> Response<V> error(ResponseCode responseCode, String msg){
-		Response<V> response = new Response<>(responseCode);
-		response.msg = msg;
+		Response<V> response = new Response<>(responseCode.getCode(), msg, null);
+		ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
+		if(attributes != null){
+			HttpServletResponse httpResponse = attributes.getResponse();
+			if(httpResponse != null){
+				httpResponse.setStatus(responseCode.status());
+			}
+		}
 		return response;
 	}
 
 	public static <E> Response<Page<E>> page(List<E> list){
-    	Response<Page<E>> response = new Response<>(ResponseCode.OK);
+    	Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), "success", null);
     	if(list == null){
         	list = new ArrayList<>();
         }
@@ -136,25 +158,25 @@ public class Response<T> {
     }
 
 	public static <E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<E> page){
-		Response<Page<E>> response = new Response<>(ResponseCode.OK);
+		Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), "success", null);
 		response.setData(new Page<>(page.getRecords(), page.getTotal()));
 		return response;
 	}
 
 	public static <T, E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page, Class<E> clazz){
-		Response<Page<E>> response = new Response<>(ResponseCode.OK);
+		Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), "success", null);
 		response.setData(new Page<>(copyList(page.getRecords(), clazz), page.getTotal()));
 		return response;
 	}
 
 	public static <T, E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page, Function<T, E> mapper) {
-		Response<Page<E>> response = new Response<>(ResponseCode.OK);
+		Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), "success", null);
 		response.setData(new Page<>(page.getRecords().stream().map(mapper).toList(), page.getTotal()));
 		return response;
 	}
 
 	public static <T, E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page, Function<T, E> mapper, Predicate<T> filter) {
-		Response<Page<E>> response = new Response<>(ResponseCode.OK);
+		Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), "success", null);
 		response.setData(new Page<>(page.getRecords().stream().filter(filter).map(mapper).toList(), page.getTotal()));
 		return response;
 	}
