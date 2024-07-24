@@ -71,6 +71,9 @@ public class Response<T> {
 		return "{code=" + code + ", msg=" + msg + ", data=" + data + "}";
 	}
 
+	/**
+	 * http="#{Enum.status}", code="#{Enum.code}", msg="#{Enum.msg}"
+	 */
 	public static <V> Response<V> code(ResponseCode responseCode){
 		Response<V> response = new Response<>(responseCode.code(), responseCode.msg(), null);
 		ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
@@ -83,6 +86,9 @@ public class Response<T> {
 		return response;
 	}
 
+	/**
+	 * http="#{Enum.status}", code="#{Enum.code}", msg="#{Enum.msg}", data="#{data}"
+	 */
 	public static <V> Response<V> data(ResponseCode responseCode, V data){
 		Response<V> response = new Response<>(responseCode.code(), responseCode.msg(), data);
 		ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
@@ -95,6 +101,9 @@ public class Response<T> {
 		return response;
 	}
 
+	/**
+	 * http="#{Enum.status}", code="#{Enum.code}", msg="#{msg}"
+	 */
 	public static <V> Response<V> msg(ResponseCode responseCode, String msg){
 		Response<V> response = new Response<>(responseCode.code(), msg, null);
 		ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
@@ -107,22 +116,37 @@ public class Response<T> {
 		return response;
 	}
 
+	/**
+	 * http=200, code=200, msg="success"
+	 */
 	public static <V> Response<V> success(){
         return new Response<>(HttpStatus.OK.value(), "success", null);
     }
 
+	/**
+	 * http=200, code=200, msg="success", data="#{data}"
+	 */
 	public static <V> Response<V> success(V data){
         return new Response<>(HttpStatus.OK.value(), "success", data);
     }
 
+	/**
+	 * http=200, code=200, msg="#{msg}", data="#{data}"
+	 */
 	public static <V> Response<V> success(V data, String msg){
 		return new Response<>(HttpStatus.OK.value(), msg, data);
 	}
 
+	/**
+	 * http=200, code=500, msg="Internal Server Error"
+	 */
 	public static <V> Response<V> error(){
 		return new Response<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), null);
 	}
 
+	/**
+	 * http=200, code=500, msg="#{msg}"
+	 */
 	public static <V> Response<V> error(String msg){
 		return new Response<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), msg, null);
 	}
