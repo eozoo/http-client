@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.cowave.tools</groupId>
+	<groupId>com.cowave.commons</groupId>
 	<artifactId>spring-feign</artifactId>
 	<version>3.0.0</version>
 	<packaging>jar</packaging>
@@ -92,6 +92,13 @@
 				<configuration>
 					<attach>true</attach>
 				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
