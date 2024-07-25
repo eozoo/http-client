@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
@@ -17,7 +19,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static feign.Util.checkNotNull;
-import static feign.Util.ensureClosed;
 import static java.lang.String.format;
 
 /**
@@ -94,65 +95,38 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
 
         long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
         int status = response.status();
-        boolean shouldClose = true;
         try {
+            Type returnType = metadata.returnType();
             // 1.响应类型: feign.Response
-            if (Response.class == metadata.returnType()) {
-                if (response.body() == null) {
-                    logger.info(">< {} {}ms {}", status, cost, url);
-                    return response;
-                }
-                if (response.body().length() == null || response.body().length() > MAX_RESPONSE_BUFFER_SIZE) {
-                    shouldClose = false;
-                    logger.info(">< {} {}ms {}", status, cost, url);
-                    return response;
-                }
-                // Ensure the response body is disconnected
-                byte[] bodyData = Util.toByteArray(response.body().asInputStream());
-                logger.info(">< {} {}ms {}", status, cost, url);
-                return Response.create(status, response.reason(), response.headers(), bodyData);
+            if (Response.class.equals(returnType)) {
+                return parseFeignResponse(response, status, url, cost);
             }
 
+            Type paramType = getParamTypeOf(returnType, ResponseEntity.class);
             // 2.响应类型: org.springframework.http.ResponseEntity
-            if (ResponseEntity.class == metadata.returnType()) {
-                // Header信息
-                HttpHeaders headers = new HttpHeaders();
-                for (Map.Entry<String, Collection<String>> entry : response.headers().entrySet()) {
-                    headers.put(entry.getKey(), entry.getValue().stream().toList());
-                }
-                // 获取响应主体
-                String body = null;
-                if (response.body() != null) {
-                    body = StreamUtils.copyToString(response.body().asInputStream(), StandardCharsets.UTF_8);
-                }
-                logger.info(">< {} {}ms {}", status, cost, url);
-                return new ResponseEntity<>(body, headers, response.status());
+            if(paramType != null){
+                return parseResponseEntity(paramType, response, status, url, cost);
             }
 
+            paramType = getParamTypeOf(returnType, HttpResponse.class);
             // 3.响应类型: org.springframework.feign.codec.HttpResponse
-            if (HttpResponse.class == metadata.returnType()) {
-                // Header信息
-                HttpHeaders headers = new HttpHeaders();
-                for (Map.Entry<String, Collection<String>> entry : response.headers().entrySet()) {
-                    headers.put(entry.getKey(), entry.getValue().stream().toList());
-                }
-                // 获取响应主体
-                String body = null;
-                if (response.body() != null) {
-                    body = StreamUtils.copyToString(response.body().asInputStream(), StandardCharsets.UTF_8);
-                }
-                logger.info(">< {} {}ms {}", status, cost, url);
-                return new HttpResponse<>(response.status(), headers, body);
+            if(paramType != null){
+                return parseHttpResponse(paramType, response, status, url, cost);
             }
 
-            // 4.交给decoder
+            // 4.decoder解码
             if (status >= 200 && status < 300) {
                 return decoder.decode(response, metadata.returnType(), name, url, cost, status, logger);
             }
 
-
-            throw new RemoteException(url, status, -3, format("remote[%s] %sms %s", -3, cost, url));
-
+            String body = null;
+            if (response.body() != null) {
+                body = StreamUtils.copyToString(response.body().asInputStream(), StandardCharsets.UTF_8);
+                logger.error(">< {} {}ms {} {}", status, cost, url, body);
+            }else{
+                logger.error(">< {} {}ms {}", status, cost, url);
+            }
+            throw new RemoteException(url, status, -3, body);
         } catch(RemoteException e) {
             if(exceptionHandler != null){
                 exceptionHandler.handle(e);
@@ -164,10 +138,106 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
                 exceptionHandler.handle(ex);
             }
             throw ex;
-        } finally {
-            if (shouldClose) {
-                ensureClosed(response.body());
+        }
+    }
+
+    private HttpResponse parseHttpResponse(Type paramType, Response response, int status, String url, long cost) throws IOException {
+        // Header信息
+        HttpHeaders headers = new HttpHeaders();
+        for (Map.Entry<String, Collection<String>> entry : response.headers().entrySet()) {
+            headers.put(entry.getKey(), entry.getValue().stream().toList());
+        }
+
+        // 获取响应主体
+        String body = null;
+        if (response.body() != null) {
+            body = StreamUtils.copyToString(response.body().asInputStream(), StandardCharsets.UTF_8);
+        }
+
+        if(status >= 200 && status < 300){
+            logger.info(">< {} {}ms {}", status, cost, url);
+            if(body == null || paramType.equals(String.class)){
+                return new HttpResponse<>(response.status(), headers, body);
+            }else{
+                return new HttpResponse<>(response.status(), headers, JsonUtil.read(body, paramType));
             }
+        }else if(body == null){
+            logger.error(">< {} {}ms {}", status, cost, url);
+            return new HttpResponse<>(response.status(), headers, null);
+        }else{
+            logger.error(">< {} {}ms {} {}", status, cost, url, body);
+            HttpResponse httpResponse = new HttpResponse<>(response.status(), headers, body);
+            httpResponse.setMessage(body);
+            return httpResponse;
+        }
+    }
+
+    private ResponseEntity parseResponseEntity(Type paramType, Response response, int status, String url, long cost) throws IOException {
+        // Header信息
+        HttpHeaders headers = new HttpHeaders();
+        for (Map.Entry<String, Collection<String>> entry : response.headers().entrySet()) {
+            headers.put(entry.getKey(), entry.getValue().stream().toList());
+        }
+
+        // 获取响应主体
+        String body = null;
+        if (response.body() != null) {
+            body = StreamUtils.copyToString(response.body().asInputStream(), StandardCharsets.UTF_8);
+        }
+
+        if(status >= 200 && status < 300){
+            logger.info(">< {} {}ms {}", status, cost, url);
+            if(body == null || paramType.equals(String.class)){
+                return new ResponseEntity<>(body, headers, response.status());
+            }else{
+                return new ResponseEntity<>(JsonUtil.read(body, paramType), headers, response.status());
+            }
+        }else if(body == null){
+            logger.error(">< {} {}ms {}", status, cost, url);
+        }else{
+            logger.error(">< {} {}ms {} {}", status, cost, url, body);
+        }
+        return new ResponseEntity<>(body, headers, response.status());
+    }
+
+    private Response parseFeignResponse(Response response, int status, String url, long cost) throws IOException {
+        if (response.body() == null) {
+            logging(status, cost, url, null);
+            return response;
+        }
+
+        if (response.body().length() == null || response.body().length() > MAX_RESPONSE_BUFFER_SIZE) {
+            logging(status, cost, url, null);
+            return response; // 未关闭流
+        }
+
+        String body = StreamUtils.copyToString(response.body().asInputStream(), StandardCharsets.UTF_8);
+        logging(status, cost, url, body);
+        return Response.create(status, response.reason(), response.headers(), body, StandardCharsets.UTF_8);
+    }
+
+    private Type getParamTypeOf(Type type, Class<?> clazz) {
+        if (type instanceof ParameterizedType parameterizedType) {
+            Type rawType = parameterizedType.getRawType();
+            if (rawType instanceof Class<?> && clazz.equals(rawType)) {
+                Type[] paramTypes = parameterizedType.getActualTypeArguments();
+                if (paramTypes == null || paramTypes.length == 0) {
+                    return Object.class;
+                } else {
+                    return paramTypes[0];
+                }
+            }
+        }
+        return null;
+    }
+
+    private void logging(int status, long cost, String url, String body){
+        if(status >= 200 && status < 300){
+            logger.info(">< {} {}ms {}", status, cost, url);
+        }else if(body == null){
+            logger.error(">< {} {}ms {}", status, cost, url);
+        }else{
+            logger.error(">< {} {}ms {} {}", status, cost, url, body);
         }
     }
 

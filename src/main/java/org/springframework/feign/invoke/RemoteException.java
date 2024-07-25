@@ -9,33 +9,33 @@ public class RemoteException extends RuntimeException {
 
     private final String url;
 
-    private final int httpStatus;
+    private final int status;
 
-    private final int respCode;
+    private final int code;
 
-    public RemoteException(String url, int httpStatus, int respCode, String message) {
+    public RemoteException(String url, int status, int code, String message) {
         super(message);
         this.url = url;
-        this.httpStatus = httpStatus;
-        this.respCode = respCode;
+        this.status = status;
+        this.code = code;
     }
 
-    public RemoteException(String url, int httpStatus, int respCode, String message, Throwable cause) {
+    public RemoteException(String url, int status, int code, String message, Throwable cause) {
         super(message, cause);
         this.url = url;
-        this.httpStatus = httpStatus;
-        this.respCode = respCode;
+        this.status = status;
+        this.code = code;
     }
 
     public String url(){
         return url;
     }
 
-    public int httpStatus(){
-        return httpStatus;
+    public int status(){
+        return status;
     }
 
-    public int respCode(){
-        return respCode;
+    public int code(){
+        return code;
     }
 }

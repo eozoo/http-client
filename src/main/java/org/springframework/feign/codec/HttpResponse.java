@@ -1,5 +1,7 @@
 package org.springframework.feign.codec;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +17,14 @@ import java.util.List;
  * @author shanhuiming
  *
  */
+@Getter
+@Setter
 public class HttpResponse<T> extends ResponseEntity<T> {
+
+    /**
+     * 非200响应时，body序列化T类型可能失败，所以这里加个字段存放描述信息
+     */
+    private String message;
 
     public HttpResponse(){
         super(HttpStatus.OK);
