@@ -37,9 +37,6 @@ public class Response<T> {
 	/** 错误堆栈信息 */
 	private List<String> cause;
 
-	/** 调用链 **/
-	private List<RemoteChain> chains;
-
 	public Response(){
 
 	}
@@ -57,22 +54,6 @@ public class Response<T> {
 		this.code = code;
 		this.msg = msg;
 		this.data = data;
-
-		RemoteChainHolder holder = RemoteChain.CHAIN.get(); // 当前请求的同步远程调用记录
-		RemoteChain.CHAIN.remove();
-		if(holder != null){
-			this.chains = holder.getChains();
-		}
-
-		String threadName = Thread.currentThread().getName(); // 请求对应的异步远程调用记录
-		Map<String, RemoteChain> chainMap = RemoteChain.ASYNC_CHAIN.remove(threadName);
-		if(chainMap != null){
-			if(this.chains == null){
-				this.chains = chainMap.values().stream().toList();
-			}else{
-				this.chains.addAll(chainMap.values());
-			}
-		}
 	}
 
 	@Override

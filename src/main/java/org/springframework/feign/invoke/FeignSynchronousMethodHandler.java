@@ -4,23 +4,17 @@ import feign.*;
 import org.springframework.feign.FeignExceptionHandler;
 import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.codec.HttpResponse;
-import org.springframework.feign.codec.RemoteChain;
 import org.springframework.feign.invoke.template.FeignTemplateFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StreamUtils;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static feign.Util.checkNotNull;
 import static feign.Util.ensureClosed;
@@ -87,31 +81,10 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
         Response response;
         long start = System.nanoTime();
         try {
-            // Deprecated
-            RequestAttributes attributes =  RequestContextHolder.getRequestAttributes();
-            String threadName = Thread.currentThread().getName();
-            if(attributes == null && threadName != null && threadName.endsWith("-async")){
-                threadName = threadName.substring(0, threadName.length() - 6);
-                ConcurrentMap<String, RemoteChain> chainMap =
-                        RemoteChain.ASYNC_CHAIN.computeIfAbsent(threadName, (key) -> new ConcurrentHashMap<>());
-
-                String realUrl = url;
-                int index = realUrl.indexOf("?");
-                if(index != -1){
-                    realUrl = realUrl.substring(0, index);
-                }
-                RemoteChain chain = RemoteChain.newChain(false, name, realUrl, 0, 0, "0", null);
-                chain.setCount(new AtomicInteger(0)); // 先减1尝试放进去，然后再统一加1
-                chain.setAsync(true);
-                RemoteChain effectChain = chainMap.computeIfAbsent(realUrl, (key) -> chain);
-                effectChain.increaseCount();
-            }
-
             // http调用
             response = client.execute(request, options);
         } catch (IOException e) {
             long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-            RemoteChain.appendChain(false, name, url, cost, -1, "-1", null);
             RemoteException ex = new RemoteException(url, -1, -1, format("remote[%s] failed %sms %s ", -1, cost, url), e);
             if(exceptionHandler != null){
                 exceptionHandler.handle(ex);
@@ -177,7 +150,7 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
                 return decoder.decode(response, metadata.returnType(), name, url, cost, status, logger);
             }
 
-            RemoteChain.appendChain(false, name, url, cost, status, "-3", null);
+
             throw new RemoteException(url, status, -3, format("remote[%s] %sms %s", -3, cost, url));
 
         } catch(RemoteException e) {
@@ -186,7 +159,6 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
             }
             throw e;
         } catch (Exception e) {
-            RemoteChain.appendChain(false, name, url, cost, status, "-2", null);
             RemoteException ex = new RemoteException(url, status, -2, format("remote[%s] failed %sms %s ", -2, cost, url), e);
             if(exceptionHandler != null){
                 exceptionHandler.handle(ex);

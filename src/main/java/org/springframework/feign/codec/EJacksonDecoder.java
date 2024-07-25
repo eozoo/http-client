@@ -46,7 +46,6 @@ public class EJacksonDecoder implements FeignDecoder {
         reader.reset();
 
         if (void.class == type) {
-            RemoteChain.appendChain(true, name, url, cost, httpCode, "nul", null);
             logger.info(">< {} {}ms {}", httpCode, cost, url);
             return null;
         }
@@ -55,10 +54,8 @@ public class EJacksonDecoder implements FeignDecoder {
         if(obj != null){
             if(org.springframework.feign.codec.Response.class.isAssignableFrom(obj.getClass())){
                 org.springframework.feign.codec.Response resp = (org.springframework.feign.codec.Response)obj;
-                RemoteChain.appendChain(resp.getCode() == 200, name, url, cost, httpCode, String.valueOf(resp.getCode()), resp.getChains());
                 logger.error(">< {} {}ms {} {code={}, msg={}}", httpCode, cost, url, resp.getCode(), resp.getMsg());
             }else{
-                RemoteChain.appendChain(httpCode == 200, name, url, cost, httpCode, "?", null);
                 logger.info(">< {} {}ms {}", httpCode, cost, url);
             }
         }else{
