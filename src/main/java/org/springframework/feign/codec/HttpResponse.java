@@ -6,7 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -31,8 +33,9 @@ public class HttpResponse<T> extends ResponseEntity<T> {
      * 设置Http Header
      */
     public HttpResponse<T> setHeader(String key, String... values){
-        HttpHeaders headers = new HttpHeaders(this.getHeaders());
-        headers.put(key, Arrays.stream(values).toList());
+        HttpHeaders headers = new HttpHeaders();
+        headers.putAll(this.getHeaders());
+        headers.put(key, List.of(values));
         return new HttpResponse<>(this.getStatusCode().value(), headers, this.getBody());
     }
 
