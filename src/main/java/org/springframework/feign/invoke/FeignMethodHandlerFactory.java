@@ -31,7 +31,7 @@ public class FeignMethodHandlerFactory {
 
     public InvocationHandlerFactory.MethodHandler create(Target<?> target, MethodMetadata md,
                                                          FeignTemplateFactory buildTemplateFromArgs, Request.Options options, FeignDecoder decoder, org.slf4j.Logger logger) {
-        return new FeignSynchronousMethodHandler(target,
+        return new FeignSyncRequester(target,
                 client, retryer, requestInterceptors, md, buildTemplateFromArgs, options, decoder, logger, exceptionHandler);
     }
 }

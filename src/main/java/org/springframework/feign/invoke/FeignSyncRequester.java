@@ -24,7 +24,7 @@ import static java.lang.String.format;
 /**
  * @author shanhuiming
  */
-public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.MethodHandler {
+public class FeignSyncRequester implements InvocationHandlerFactory.MethodHandler {
     private static final long MAX_RESPONSE_BUFFER_SIZE = 8192L;
     private final org.slf4j.Logger logger;
     private final MethodMetadata metadata;
@@ -38,15 +38,15 @@ public class FeignSynchronousMethodHandler implements InvocationHandlerFactory.M
 
     private final FeignExceptionHandler exceptionHandler;
 
-    public FeignSynchronousMethodHandler(Target<?> target, Client client,
-                                         org.springframework.feign.retryer.Retryer retryer,
-                                         List<RequestInterceptor> requestInterceptors,
-                                         MethodMetadata metadata,
-                                         FeignTemplateFactory buildTemplateFromArgs,
-                                         Request.Options options,
-                                         FeignDecoder decoder,
-                                         org.slf4j.Logger logger,
-                                         FeignExceptionHandler exceptionHandler) {
+    public FeignSyncRequester(Target<?> target, Client client,
+                              org.springframework.feign.retryer.Retryer retryer,
+                              List<RequestInterceptor> requestInterceptors,
+                              MethodMetadata metadata,
+                              FeignTemplateFactory buildTemplateFromArgs,
+                              Request.Options options,
+                              FeignDecoder decoder,
+                              org.slf4j.Logger logger,
+                              FeignExceptionHandler exceptionHandler) {
         this.target = checkNotNull(target, "target");
         this.client = checkNotNull(client, "client for %s", target);
         this.retryer = checkNotNull(retryer, "retryer for %s", target);
