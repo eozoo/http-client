@@ -72,6 +72,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         }
     }
 
+    // TODO 下载
     Object executeAndDecode(RequestTemplate template) throws Throwable {
         Request request = targetRequest(template);
         String url = request.url();
@@ -84,13 +85,10 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         try {
             // http调用
             response = client.execute(request, options);
-        } catch (IOException e) {
+        } catch (IOException e){
             long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-            RemoteException ex = new RemoteException(url, -1, -1, format("remote[%s] failed %sms %s ", -1, cost, url), e);
-            if(exceptionHandler != null){
-                exceptionHandler.handle(ex);
-            }
-            throw ex;
+            logger.error(">< {}ms {} {}", cost, e.getMessage(), url);
+            throw new RemoteException(url, format("%sms %s %s", cost, e.getMessage(), url));
         }
 
         long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
@@ -126,18 +124,15 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
             }else{
                 logger.error(">< {} {}ms {}", status, cost, url);
             }
-            throw new RemoteException(url, status, -3, body);
+            throw new RemoteException(url, status, null, body);
         } catch(RemoteException e) {
             if(exceptionHandler != null){
                 exceptionHandler.handle(e);
             }
             throw e;
-        } catch (Exception e) {
-            RemoteException ex = new RemoteException(url, status, -2, format("remote[%s] failed %sms %s ", -2, cost, url), e);
-            if(exceptionHandler != null){
-                exceptionHandler.handle(ex);
-            }
-            throw ex;
+        } catch (IOException e) {
+            logger.error(">< {}ms {} {}", cost, e.getMessage(), url);
+            throw new RemoteException(url, format("%sms %s %s", cost, e.getMessage(), url));
         }
     }
 

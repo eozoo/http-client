@@ -40,11 +40,11 @@ public @interface FeignClient {
 
 	String sslCertPath() default "";
 
-	int connectTimeoutMillis() default 60000;
+	int connectTimeoutMillis() default 3000;
 
 	String connectTimeoutMillisStr() default "";
 
-	int readTimeoutMillis() default 600000;
+	int readTimeoutMillis() default 30000;
 
 	String readTimeoutMillisStr() default "";
 

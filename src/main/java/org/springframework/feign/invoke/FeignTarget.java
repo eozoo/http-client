@@ -3,6 +3,7 @@ package org.springframework.feign.invoke;
 import feign.Request;
 import feign.RequestTemplate;
 import feign.Target;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.feign.FeignServiceChooser;
 import org.springframework.util.StringUtils;
@@ -13,6 +14,7 @@ import org.springframework.util.StringValueResolver;
  * @author shanhuiming
  *
  */
+@Slf4j
 public class FeignTarget<T> implements Target<T> {
     private final Class<T> type;
     private final String name;
@@ -60,7 +62,8 @@ public class FeignTarget<T> implements Target<T> {
         String parsed = prasedName + prasedUrl;
         if (request.url().indexOf("http") != 0) {
             if(parsed.indexOf("http") != 0){
-                throw new RemoteException(url, -1, -1, "remote url reserve failed[name=" + name + ", url=" + url + ", parsed=" + parsed + "]");
+                log.error(">< Remote failed due to illegal url, name={}, url={}", name, url);
+                throw new RemoteException(url, "illegal url[name=" + name + ", url=" + url + "]");
             }
             request.insert(0, parsed);
         }

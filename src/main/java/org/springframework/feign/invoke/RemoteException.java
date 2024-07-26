@@ -9,18 +9,25 @@ public class RemoteException extends RuntimeException {
 
     private final String url;
 
-    private final int status;
+    private final Integer status;
 
-    private final int code;
+    private final Integer code;
 
-    public RemoteException(String url, int status, int code, String message) {
+    public RemoteException(String url, String message) {
+        super(message);
+        this.url = url;
+        this.status = null;
+        this.code = null;
+    }
+
+    public RemoteException(String url, Integer status, Integer code, String message) {
         super(message);
         this.url = url;
         this.status = status;
         this.code = code;
     }
 
-    public RemoteException(String url, int status, int code, String message, Throwable cause) {
+    public RemoteException(String url, Integer status, Integer code, String message, Throwable cause) {
         super(message, cause);
         this.url = url;
         this.status = status;
@@ -31,11 +38,11 @@ public class RemoteException extends RuntimeException {
         return url;
     }
 
-    public int status(){
+    public Integer status(){
         return status;
     }
 
-    public int code(){
+    public Integer code(){
         return code;
     }
 }

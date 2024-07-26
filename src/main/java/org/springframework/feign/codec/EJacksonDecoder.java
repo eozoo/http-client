@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Response;
+import org.springframework.http.HttpStatus;
 
 import java.io.BufferedReader;
 import java.io.Reader;
@@ -32,7 +33,7 @@ public class EJacksonDecoder implements FeignDecoder {
     }
 
     @Override
-    public Object decode(Response response, Type type, String name, String url, long cost, int httpCode, org.slf4j.Logger logger) throws Exception {
+    public Object decode(Response response, Type type, String name, String url, long cost, int status, org.slf4j.Logger logger) throws Exception {
         Reader reader = response.body().asReader();
         if (!reader.markSupported()) {
             reader = new BufferedReader(reader, 1);
@@ -40,13 +41,12 @@ public class EJacksonDecoder implements FeignDecoder {
 
         reader.mark(1);
         if (reader.read() == -1) {
-            // Eagerly returning null avoids "No content to map due to end-of-input"
             return null;
         }
         reader.reset();
 
         if (void.class == type) {
-            logger.info(">< {} {}ms {}", httpCode, cost, url);
+            logger.info(">< {} {}ms {}", status, cost, url);
             return null;
         }
 
@@ -54,12 +54,16 @@ public class EJacksonDecoder implements FeignDecoder {
         if(obj != null){
             if(org.springframework.feign.codec.Response.class.isAssignableFrom(obj.getClass())){
                 org.springframework.feign.codec.Response resp = (org.springframework.feign.codec.Response)obj;
-                logger.error(">< {} {}ms {} {code={}, msg={}}", httpCode, cost, url, resp.getCode(), resp.getMsg());
+                if(HttpStatus.OK.value() != resp.getCode()){
+                    logger.error(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
+                }else{
+                    logger.info(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
+                }
             }else{
-                logger.info(">< {} {}ms {}", httpCode, cost, url);
+                logger.info(">< {} {}ms {}", status, cost, url);
             }
         }else{
-            logger.info(">< {} {}ms {}", httpCode, cost, url);
+            logger.info(">< {} {}ms {}", status, cost, url);
         }
         return obj;
     }
