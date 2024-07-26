@@ -76,10 +76,6 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
     Object executeAndDecode(RequestTemplate template) throws Throwable {
         Request request = targetRequest(template);
         String url = request.url();
-
-        FeignTarget<?> feignTarget = (FeignTarget<?>)target;
-        String name = feignTarget.name();
-
         Response response;
         long start = System.nanoTime();
         try {
@@ -114,7 +110,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
 
             // 4.decoder解码
             if (status == 200) {
-                return decoder.decode(response, metadata.returnType(), name, url, cost, status, logger);
+                return decoder.decode(response, metadata.returnType(), url, cost, status, logger);
             }
 
             String body = null;

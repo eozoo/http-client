@@ -14,12 +14,12 @@ import java.lang.reflect.Type;
  */
 public interface FeignDecoder {
 
-    Object decode(Response response, Type type, String name, String url, long cost, int httpCode, org.slf4j.Logger logger) throws Exception;
+    Object decode(Response response, Type type, String url, long cost, int httpCode, org.slf4j.Logger logger) throws Exception;
 
     class StringDecoder implements FeignDecoder {
 
         @Override
-        public Object decode(Response response, Type type, String name, String url, long cost, int status, org.slf4j.Logger logger) throws IOException {
+        public Object decode(Response response, Type type, String url, long cost, int status, org.slf4j.Logger logger) throws IOException {
             logger.info(">< {} {}ms {}", status, cost, url);
 
             if (byte[].class.equals(type)) {

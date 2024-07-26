@@ -34,7 +34,7 @@ public class ResponseDecoder implements FeignDecoder {
     }
 
     @Override
-    public Object decode(Response response, Type type, String name, String url, long cost, int status, org.slf4j.Logger logger) throws Exception {
+    public Object decode(Response response, Type type, String url, long cost, int status, org.slf4j.Logger logger) throws Exception {
         if (response.body() == null) {
             logger.info(">< {} {}ms {}", status, cost, url);
             return null;

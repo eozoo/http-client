@@ -33,7 +33,7 @@ public class EJacksonDecoder implements FeignDecoder {
     }
 
     @Override
-    public Object decode(Response response, Type type, String name, String url, long cost, int status, org.slf4j.Logger logger) throws Exception {
+    public Object decode(Response response, Type type, String url, long cost, int status, org.slf4j.Logger logger) throws Exception {
         Reader reader = response.body().asReader();
         if (!reader.markSupported()) {
             reader = new BufferedReader(reader, 1);

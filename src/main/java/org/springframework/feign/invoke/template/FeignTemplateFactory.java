@@ -47,7 +47,8 @@ public class FeignTemplateFactory {
             checkArgument(argv[urlIndex] != null, "URI parameter %s was null", urlIndex);
             mutable.insert(0, String.valueOf(argv[urlIndex]));
         }
-        Map<String, Object> varBuilder = new LinkedHashMap<String, Object>();
+
+        Map<String, Object> varBuilder = new LinkedHashMap<>();
         for (Map.Entry<Integer, Collection<String>> entry : metadata.indexToName().entrySet()) {
             int i = entry.getKey();
             Object value = argv[entry.getKey()];
@@ -71,7 +72,6 @@ public class FeignTemplateFactory {
         if (metadata.headerMapIndex() != null) {
             template = addHeaderMapHeaders(argv, template);
         }
-
         return template;
     }
 
@@ -99,9 +99,7 @@ public class FeignTemplateFactory {
         Map<Object, Object> headerMap = (Map<Object, Object>) argv[metadata.headerMapIndex()];
         for (Map.Entry<Object, Object> currEntry : headerMap.entrySet()) {
             checkState(currEntry.getKey().getClass() == String.class, "HeaderMap key must be a String: %s", currEntry.getKey());
-
             Collection<String> values = new ArrayList<String>();
-
             Object currValue = currEntry.getValue();
             if (currValue instanceof Iterable<?>) {
                 Iterator<?> iter = ((Iterable<?>) currValue).iterator();
@@ -123,9 +121,7 @@ public class FeignTemplateFactory {
         Map<Object, Object> queryMap = (Map<Object, Object>) argv[metadata.queryMapIndex()];
         for (Map.Entry<Object, Object> currEntry : queryMap.entrySet()) {
             checkState(currEntry.getKey().getClass() == String.class, "QueryMap key must be a String: %s", currEntry.getKey());
-
-            Collection<String> values = new ArrayList<String>();
-
+            Collection<String> values = new ArrayList<>();
             Object currValue = currEntry.getValue();
             if (currValue instanceof Iterable<?>) {
                 Iterator<?> iter = ((Iterable<?>) currValue).iterator();
@@ -136,14 +132,12 @@ public class FeignTemplateFactory {
             } else {
                 values.add(currValue == null ? null : currValue.toString());
             }
-
             mutable.query(metadata.queryMapEncoded(), (String) currEntry.getKey(), values);
         }
         return mutable;
     }
 
-    protected RequestTemplate resolve(Object[] argv, RequestTemplate mutable,
-                                      Map<String, Object> variables) {
+    protected RequestTemplate resolve(Object[] argv, RequestTemplate mutable, Map<String, Object> variables) {
         return mutable.resolve(variables);
     }
 }
