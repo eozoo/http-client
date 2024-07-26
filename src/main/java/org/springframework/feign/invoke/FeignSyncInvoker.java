@@ -113,7 +113,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
             }
 
             // 4.decoder解码
-            if (status >= 200 && status < 300) {
+            if (status == 200) {
                 return decoder.decode(response, metadata.returnType(), name, url, cost, status, logger);
             }
 
@@ -149,16 +149,16 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
             body = StreamUtils.copyToString(response.body().asInputStream(), StandardCharsets.UTF_8);
         }
 
-        if(status >= 200 && status < 300){
+        if(status == 200){
             logger.info(">< {} {}ms {}", status, cost, url);
             if(body == null || paramType.equals(String.class)){
                 return new HttpResponse<>(response.status(), headers, body);
             }else{
                 return new HttpResponse<>(response.status(), headers, JsonUtil.read(body, paramType));
             }
-        }else if(body == null){
-            logger.error(">< {} {}ms {}", status, cost, url);
-            return new HttpResponse<>(response.status(), headers, null);
+        }else if(status > 200 && status < 300){
+            logger.info(">< {} {}ms {}", status, cost, url);
+            return new HttpResponse<>(response.status(), headers, body);
         }else{
             logger.error(">< {} {}ms {} {}", status, cost, url, body);
             HttpResponse<?> httpResponse = new HttpResponse<>(response.status(), headers, body);
