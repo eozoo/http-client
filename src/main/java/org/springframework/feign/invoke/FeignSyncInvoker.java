@@ -136,7 +136,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         }
     }
 
-    private HttpResponse parseHttpResponse(Type paramType, Response response, int status, String url, long cost) throws IOException {
+    private HttpResponse<?> parseHttpResponse(Type paramType, Response response, int status, String url, long cost) throws IOException {
         // Header信息
         HttpHeaders headers = new HttpHeaders();
         for (Map.Entry<String, Collection<String>> entry : response.headers().entrySet()) {
@@ -161,13 +161,13 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
             return new HttpResponse<>(response.status(), headers, null);
         }else{
             logger.error(">< {} {}ms {} {}", status, cost, url, body);
-            HttpResponse httpResponse = new HttpResponse<>(response.status(), headers, body);
+            HttpResponse<?> httpResponse = new HttpResponse<>(response.status(), headers, body);
             httpResponse.setMessage(body);
             return httpResponse;
         }
     }
 
-    private ResponseEntity parseResponseEntity(Type paramType, Response response, int status, String url, long cost) throws IOException {
+    private ResponseEntity<?> parseResponseEntity(Type paramType, Response response, int status, String url, long cost) throws IOException {
         // Header信息
         HttpHeaders headers = new HttpHeaders();
         for (Map.Entry<String, Collection<String>> entry : response.headers().entrySet()) {
