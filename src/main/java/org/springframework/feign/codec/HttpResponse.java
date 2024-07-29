@@ -48,6 +48,14 @@ public class HttpResponse<T> extends ResponseEntity<T> {
         return new HttpResponse<>(this.getStatusCode().value(), headers, this.getBody());
     }
 
+    public boolean isSuccess(){
+        return getStatusCodeValue() == 200;
+    }
+
+    public boolean isFailed(){
+        return getStatusCodeValue() != 200;
+    }
+
     /**
      * status=#{HttpCode.status}, body=#{HttpCode.msg}
      */
