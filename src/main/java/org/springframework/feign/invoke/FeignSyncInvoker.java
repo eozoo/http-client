@@ -153,11 +153,13 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
                 return new HttpResponse<>(response.status(), headers, JsonUtil.read(body, paramType));
             }
         }else if(status > 200 && status < 300){
-            logger.info(">< {} {}ms {}", status, cost, url);
-            return new HttpResponse<>(response.status(), headers, body);
+            logger.warn(">< {} {}ms {} {}", status, cost, url, body);
+            HttpResponse<?> httpResponse = new HttpResponse<>(response.status(), headers, null);
+            httpResponse.setMessage(body);
+            return httpResponse;
         }else{
             logger.error(">< {} {}ms {} {}", status, cost, url, body);
-            HttpResponse<?> httpResponse = new HttpResponse<>(response.status(), headers, body);
+            HttpResponse<?> httpResponse = new HttpResponse<>(response.status(), headers, null);
             httpResponse.setMessage(body);
             return httpResponse;
         }
