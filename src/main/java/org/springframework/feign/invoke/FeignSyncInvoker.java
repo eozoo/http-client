@@ -74,6 +74,9 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
 
     // TODO 下载
     Object executeAndDecode(RequestTemplate template) throws Throwable {
+        Type returnType = metadata.returnType();
+        Type httpType = getParamTypeOf(returnType, HttpResponse.class);
+
         Request request = targetRequest(template);
         String url = request.url();
         Response response;
@@ -84,28 +87,32 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         } catch (IOException e){
             long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
             logger.error(">< {}ms {} {}", cost, e.getMessage(), url);
-            throw new RemoteException(url, format("%sms %s %s", cost, e.getMessage(), url));
+            if(httpType != null){
+                // 如果响应类型是HttpResponse，没有调成功也构造一个HttpResponse返回，防止上层需要识别处理
+                return new HttpResponse<>(500, new HttpHeaders(), null);
+            }else{
+                throw new RemoteException(url, format("%sms %s %s", cost, e.getMessage(), url));
+            }
         }
 
         long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
         int status = response.status();
         try {
-            Type returnType = metadata.returnType();
+
             // 1.响应类型: feign.Response
             if (Response.class.equals(returnType)) {
                 return parseFeignResponse(response, status, url, cost);
             }
 
-            Type paramType = getParamTypeOf(returnType, ResponseEntity.class);
+            Type entityType = getParamTypeOf(returnType, ResponseEntity.class);
             // 2.响应类型: org.springframework.http.ResponseEntity
-            if(paramType != null){
-                return parseResponseEntity(paramType, response, status, url, cost);
+            if(entityType != null){
+                return parseResponseEntity(entityType, response, status, url, cost);
             }
 
-            paramType = getParamTypeOf(returnType, HttpResponse.class);
             // 3.响应类型: org.springframework.feign.codec.HttpResponse
-            if(paramType != null){
-                return parseHttpResponse(paramType, response, status, url, cost);
+            if(httpType != null){
+                return parseHttpResponse(httpType, response, status, url, cost);
             }
 
             // 4.decoder解码
