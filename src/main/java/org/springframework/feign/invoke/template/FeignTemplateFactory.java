@@ -68,12 +68,10 @@ public class FeignTemplateFactory {
             // add query map parameters after initial resolve so that they take
             // precedence over any predefined values
             feignTemplate.setTemplate(addQueryMapQueryParameters(argv, feignTemplate.getTemplate()));
-            //feignTemplate = addQueryMapQueryParameters(argv, feignTemplate);
         }
 
         if (metadata.headerMapIndex() != null) {
             feignTemplate.setTemplate(addHeaderMapHeaders(argv, feignTemplate.getTemplate()));
-            //feignTemplate = addHeaderMapHeaders(argv, feignTemplate);
         }
         return feignTemplate;
     }
