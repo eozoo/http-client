@@ -24,17 +24,17 @@ public class FeignBuildEncodedTemplate extends FeignTemplateFactory{
     }
 
     @Override
-    protected RequestTemplate resolve(Object[] argv, RequestTemplate mutable,
-                                      Map<String, Object> variables) {
+    protected FeignRequestTemplate resolve(Object[] argv, RequestTemplate template, Map<String, Object> variables) {
         Object body = argv[metadata.bodyIndex()];
         checkArgument(body != null, "Body parameter %s was null", metadata.bodyIndex());
+        // 编码template.body
         try {
-            encoder.encode(body, metadata.bodyType(), mutable);
+            encoder.encode(body, metadata.bodyType(), template);
         } catch (EncodeException e) {
             throw e;
         } catch (RuntimeException e) {
             throw new EncodeException(e.getMessage(), e);
         }
-        return super.resolve(argv, mutable, variables);
+        return super.resolve(argv, template, variables);
     }
 }

@@ -1,11 +1,23 @@
-spring-feign
-======================
+## spring-feign Http调用声明
 
-Java Http调用
+### 功能说明
 
-#### 使用方式
+- 提供了一个在Spring中使用Feign调用的声明注解；
+- 另外也支持一些接口定制，比如RequestInterceptor、FeignServiceChooser，方便定制调用行为或对接服务注册中心；
 
-##### 1. 指定服务url
+#### 依赖
+
+```xml
+<dependency>
+    <groupId>com.cowave.commons</groupId>
+    <artifactId>spring-feign</artifactId>
+    <version>3.0.0</version>
+</dependency>
+```
+
+### 使用示例
+
+#### 1. 指定服务url
 
 ```java
 @FeignClient(url = "${feign.service-user.url}")
@@ -20,14 +32,14 @@ public interface UserService {
 }
 ```
 
-##### 2. 指定服务name
+#### 2. 指定服务name
 
-如果使用服务注册中心，那么可以实现一个`NameServiceChooser`，那么便可以通过name来调用，这里假设服务使用了Eureka进行注册管理
+> 如果使用服务注册中心，需要实现一个FeignServiceChooser，在Chooser中将name转换成对应服务的url
 
 ```java
 @RequiredArgsConstructor
 @Component
-public class EurekaServiceChooser implements NameServiceChooser {
+public class CloudServiceChooser implements FeignServiceChooser {
 
     private final LoadBalancerClient balancerClient;
 
@@ -42,10 +54,10 @@ public class EurekaServiceChooser implements NameServiceChooser {
 }
 ```
 
-另外，也可以指定decoder和logger。指定ResponseDecoder可以在接收时直接获取数据，而不用自己判断code，指定logger可以方便对日志按模块进行配置
+> 也可以指定decoder，比如针对我们约定的接口规范，可以使用ResponseDecoder，这样接口的返回值可以直接声明成目标类型
 
 ```java :UserService
-@FeignClient(name = "service-user", decoder = ResponseDecoder.class, logger = AccessLogger.class)
+@FeignClient(name = "service-user", decoder = ResponseDecoder.class)
 public interface UserService {
 
     @RequestLine("GET /{context-path}/api/v1/user/info/{id}")
@@ -57,15 +69,13 @@ public interface UserService {
 }
 ```
 
-##### 3. 请求设置（RequestInterceptor）
+#### 3. 请求设置 RequestInterceptor
 
-如果需要对调用请求进行一些设置，可以实现一个`RequestInterceptor`并注入到spring容器中。比如在请求头中设置认证Token和请求requestId信息
+> 如果需要对请求做一些设置，可以实现一个RequestInterceptor，比如常见的在请求头中设置认证Token或requestId信息
 
 ```java 
 public class FeignInterceptor implements RequestInterceptor {
-
-    // ...
-
+    
     @Override
     public void apply(RequestTemplate requestTemplate) {
         String requestId = Access.id();
@@ -82,31 +92,17 @@ public class FeignInterceptor implements RequestInterceptor {
 }
 ```
 
-##### 4. 不确定url（FeignManager）
+#### 4. 调用时指定url
 
-可能存在这样的场景，无法提前确定url信息（调用时才指定），但是对于请求和响应的结构是确定的。对此我们提供了静态工厂：FeignManager
-
-```java
-public static <T> T get(Class<T> clazz, String url);
-```
-
-比如下面这样：我们先定义好响应结构
+> 如果调用的服务url不能在初始化时指定，需要在调用时才确定，我们提供了一个约定参数"@Param("protocolUrl")"来传递，其优先级高于上面name和url
 
 ```java
-@FeignClient(connectTimeoutMillis = 5000, readTimeoutMillis = 5000)
-public interface TemporaryClient {
-
-    @RequestLine("POST")
-    @Headers({"Content-Type: application/json"})
-    Response post(Object data);
-
-    @RequestLine("GET")
-    Response get();
+@FeignClient
+public interface NmsService {
+    
+    @RequestLine("GET /api/nms/svn_rcst/rcst_authentication?ids={ids}")
+    HttpResponse<NmsNetworkInfoDTO> list(@Param("protocolUrl") String url, @Param("ids") List<Integer> ids);
 }
 ```
 
-然后在真正调用时再设置url，创建client实例进行调用
-
-```java
-Response response = FeignManager.get(TemporaryClient.class, "http://10.x.x.1:80/api/v1/xxx").get();
-```
+> 这里声明的返回类型是HttpResponse，主要针对外部服务的调用（通用Http规范，但是没有遵从我们的约定）

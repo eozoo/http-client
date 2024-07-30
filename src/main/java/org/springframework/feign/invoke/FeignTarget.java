@@ -46,6 +46,15 @@ public class FeignTarget<T> implements Target<T> {
         return url;
     }
 
+    public Request apply(RequestTemplate request, String protocolUrl) {
+        if(StringUtils.hasText(protocolUrl)){
+            request.insert(0, protocolUrl);
+            return request.request();
+        }else{
+            return apply(request);
+        }
+    }
+
     @Override
     public Request apply(RequestTemplate request) {
         String prasedName = "";
@@ -54,7 +63,7 @@ public class FeignTarget<T> implements Target<T> {
             prasedName = serviceChooser.choose(name);
         }
 
-        String prasedUrl = url;
+        String prasedUrl = "";
         if(StringUtils.hasText(url) && url.contains("${")){
             prasedUrl = valueResolver.resolveStringValue(url);
         }

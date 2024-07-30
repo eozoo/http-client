@@ -23,21 +23,22 @@ public class FeignBuildFormEncodedTemplate extends FeignTemplateFactory{
     }
 
     @Override
-    protected RequestTemplate resolve(Object[] argv, RequestTemplate mutable,
-                                      Map<String, Object> variables) {
-        Map<String, Object> formVariables = new LinkedHashMap<String, Object>();
+    protected FeignRequestTemplate resolve(Object[] argv, RequestTemplate template, Map<String, Object> variables) {
+        // 填充表单参数
+        Map<String, Object> formVariables = new LinkedHashMap<>();
         for (Map.Entry<String, Object> entry : variables.entrySet()) {
             if (metadata.formParams().contains(entry.getKey())) {
                 formVariables.put(entry.getKey(), entry.getValue());
             }
         }
+        // 编码template.body
         try {
-            encoder.encode(formVariables, Encoder.MAP_STRING_WILDCARD, mutable);
+            encoder.encode(formVariables, Encoder.MAP_STRING_WILDCARD, template);
         } catch (EncodeException e) {
             throw e;
         } catch (RuntimeException e) {
             throw new EncodeException(e.getMessage(), e);
         }
-        return super.resolve(argv, mutable, variables);
+        return super.resolve(argv, template, variables);
     }
 }

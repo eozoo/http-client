@@ -40,12 +40,12 @@ public class FeignTemplateFactory {
         }
     }
 
-    public RequestTemplate create(Object[] argv) {
-        RequestTemplate mutable = new RequestTemplate(metadata.template());
+    public FeignRequestTemplate create(Object[] argv) {
+        RequestTemplate template = new RequestTemplate(metadata.template());
         if (metadata.urlIndex() != null) {
             int urlIndex = metadata.urlIndex();
             checkArgument(argv[urlIndex] != null, "URI parameter %s was null", urlIndex);
-            mutable.insert(0, String.valueOf(argv[urlIndex]));
+            template.insert(0, String.valueOf(argv[urlIndex]));
         }
 
         Map<String, Object> varBuilder = new LinkedHashMap<>();
@@ -62,17 +62,20 @@ public class FeignTemplateFactory {
             }
         }
 
-        RequestTemplate template = resolve(argv, mutable, varBuilder);
+        FeignRequestTemplate feignTemplate = resolve(argv, template, varBuilder); // TODO
+
         if (metadata.queryMapIndex() != null) {
             // add query map parameters after initial resolve so that they take
             // precedence over any predefined values
-            template = addQueryMapQueryParameters(argv, template);
+            feignTemplate.setTemplate(addQueryMapQueryParameters(argv, feignTemplate.getTemplate()));
+            //feignTemplate = addQueryMapQueryParameters(argv, feignTemplate);
         }
 
         if (metadata.headerMapIndex() != null) {
-            template = addHeaderMapHeaders(argv, template);
+            feignTemplate.setTemplate(addHeaderMapHeaders(argv, feignTemplate.getTemplate()));
+            //feignTemplate = addHeaderMapHeaders(argv, feignTemplate);
         }
-        return template;
+        return feignTemplate;
     }
 
     @SuppressWarnings("rawtypes")
@@ -85,8 +88,8 @@ public class FeignTemplateFactory {
 
     @SuppressWarnings("rawtypes")
     private List<String> expandIterable(Param.Expander expander, Iterable value) {
-        List<String> values = new ArrayList<String>();
-        for (Object element : (Iterable) value) {
+        List<String> values = new ArrayList<>();
+        for (Object element : value) {
             if (element!=null) {
                 values.add(expander.expand(element));
             }
@@ -95,7 +98,7 @@ public class FeignTemplateFactory {
     }
 
     @SuppressWarnings("unchecked")
-    private RequestTemplate addHeaderMapHeaders(Object[] argv, RequestTemplate mutable) {
+    private RequestTemplate addHeaderMapHeaders(Object[] argv, RequestTemplate template) {
         Map<Object, Object> headerMap = (Map<Object, Object>) argv[metadata.headerMapIndex()];
         for (Map.Entry<Object, Object> currEntry : headerMap.entrySet()) {
             checkState(currEntry.getKey().getClass() == String.class, "HeaderMap key must be a String: %s", currEntry.getKey());
@@ -111,13 +114,13 @@ public class FeignTemplateFactory {
                 values.add(currValue == null ? null : currValue.toString());
             }
 
-            mutable.header((String) currEntry.getKey(), values);
+            template.header((String) currEntry.getKey(), values);
         }
-        return mutable;
+        return template;
     }
 
     @SuppressWarnings("unchecked")
-    private RequestTemplate addQueryMapQueryParameters(Object[] argv, RequestTemplate mutable) {
+    private RequestTemplate addQueryMapQueryParameters(Object[] argv, RequestTemplate template) {
         Map<Object, Object> queryMap = (Map<Object, Object>) argv[metadata.queryMapIndex()];
         for (Map.Entry<Object, Object> currEntry : queryMap.entrySet()) {
             checkState(currEntry.getKey().getClass() == String.class, "QueryMap key must be a String: %s", currEntry.getKey());
@@ -132,12 +135,18 @@ public class FeignTemplateFactory {
             } else {
                 values.add(currValue == null ? null : currValue.toString());
             }
-            mutable.query(metadata.queryMapEncoded(), (String) currEntry.getKey(), values);
+            template.query(metadata.queryMapEncoded(), (String) currEntry.getKey(), values);
         }
-        return mutable;
+        return template;
     }
 
-    protected RequestTemplate resolve(Object[] argv, RequestTemplate mutable, Map<String, Object> variables) {
-        return mutable.resolve(variables);
+    protected FeignRequestTemplate resolve(Object[] argv, RequestTemplate template, Map<String, Object> variables) {
+        FeignRequestTemplate feignRequestTemplate = new FeignRequestTemplate();
+        Object protocolUrl = variables.remove("protocolUrl");
+        if(protocolUrl != null){
+            feignRequestTemplate.setProtocolUrl(protocolUrl.toString());
+        }
+        feignRequestTemplate.setTemplate(template.resolve(variables));
+        return feignRequestTemplate;
     }
 }

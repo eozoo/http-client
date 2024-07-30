@@ -4,6 +4,7 @@ import feign.*;
 import org.springframework.feign.FeignExceptionHandler;
 import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.codec.HttpResponse;
+import org.springframework.feign.invoke.template.FeignRequestTemplate;
 import org.springframework.feign.invoke.template.FeignTemplateFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -61,7 +62,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
 
     @Override
     public Object invoke(Object[] argv) throws Throwable {
-        RequestTemplate template = buildTemplateFromArgs.create(argv);
+        FeignRequestTemplate template = buildTemplateFromArgs.create(argv);
         org.springframework.feign.retryer.Retryer retryer = this.retryer.clone();
         while (true) {
             try {
@@ -73,7 +74,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
     }
 
     // TODO 下载
-    Object executeAndDecode(RequestTemplate template) throws Throwable {
+    Object executeAndDecode(FeignRequestTemplate template) throws Throwable {
         Type returnType = metadata.returnType();
         Type httpType = getParamTypeOf(returnType, HttpResponse.class);
 
@@ -241,10 +242,14 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         }
     }
 
-    Request targetRequest(RequestTemplate template) {
+    Request targetRequest(FeignRequestTemplate feignTemplate) {
         for (RequestInterceptor interceptor : requestInterceptors) {
-            interceptor.apply(template);
+            interceptor.apply(feignTemplate.getTemplate());
         }
-        return target.apply(new RequestTemplate(template));
+        if(target instanceof FeignTarget feignTarget){
+            return feignTarget.apply(new RequestTemplate(feignTemplate.getTemplate()), feignTemplate.getProtocolUrl());
+        }else{
+            return target.apply(new RequestTemplate(feignTemplate.getTemplate()));
+        }
     }
 }
