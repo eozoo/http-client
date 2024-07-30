@@ -94,15 +94,16 @@ public class FeignInterceptor implements RequestInterceptor {
 
 #### 4. 调用时指定url
 
-> 如果调用的服务url不能在初始化时指定，需要在调用时才确定，我们提供了一个约定注解"@Host"来传递，其优先级高于上面name和url
+> 如果调用的服务url不能在初始化时指定，需要在调用时才确定，我们约定了一个注解"@Host"来传递，其优先级高于上面name和url
+
+> 这里声明的返回类型是HttpResponse，主要针对外部服务的调用（通用Http规范，但是没有遵从我们的约定）
 
 ```java
 @FeignClient
 public interface NmsService {
     
+    // 比如 url = http://ip:port
     @RequestLine("GET /api/nms/svn_rcst/rcst_authentication?ids={ids}")
     HttpResponse<NmsNetworkInfoDTO> list(@Host String url, @Param("ids") List<Integer> ids);
 }
 ```
-
-> 这里声明的返回类型是HttpResponse，主要针对外部服务的调用（通用Http规范，但是没有遵从我们的约定）
