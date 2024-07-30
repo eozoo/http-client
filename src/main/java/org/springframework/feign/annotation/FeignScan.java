@@ -5,13 +5,16 @@ import org.springframework.feign.FeignBeanDefinitionRegistrar;
 
 import java.lang.annotation.*;
 
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 /**
  *
  * @author shanhuiming
  *
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
+@Target({TYPE})
+@Retention(RUNTIME)
 @Documented
 @Import(FeignBeanDefinitionRegistrar.class)
 public @interface FeignScan {

@@ -4,6 +4,7 @@ import feign.*;
 import org.springframework.feign.FeignExceptionHandler;
 import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.codec.HttpResponse;
+import org.springframework.feign.invoke.method.FeignMethodMetadata;
 import org.springframework.feign.invoke.template.FeignRequestTemplate;
 import org.springframework.feign.invoke.template.FeignTemplateFactory;
 import org.springframework.http.HttpHeaders;
@@ -28,7 +29,7 @@ import static java.lang.String.format;
 public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler {
     private static final long MAX_RESPONSE_BUFFER_SIZE = 8192L;
     private final org.slf4j.Logger logger;
-    private final MethodMetadata metadata;
+    private final FeignMethodMetadata metadata;
     private final Target<?> target;
     private final Client client;
     private final org.springframework.feign.retryer.Retryer retryer;
@@ -42,7 +43,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
     public FeignSyncInvoker(Target<?> target, Client client,
                             org.springframework.feign.retryer.Retryer retryer,
                             List<RequestInterceptor> requestInterceptors,
-                            MethodMetadata metadata,
+                            FeignMethodMetadata metadata,
                             FeignTemplateFactory buildTemplateFromArgs,
                             Request.Options options,
                             FeignDecoder decoder,
@@ -247,7 +248,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
             interceptor.apply(feignTemplate.getTemplate());
         }
         if(target instanceof FeignTarget feignTarget){
-            return feignTarget.apply(new RequestTemplate(feignTemplate.getTemplate()), feignTemplate.getProtocolUrl());
+            return feignTarget.apply(new RequestTemplate(feignTemplate.getTemplate()), feignTemplate.getHostUrl());
         }else{
             return target.apply(new RequestTemplate(feignTemplate.getTemplate()));
         }

@@ -4,6 +4,7 @@ import feign.MethodMetadata;
 import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
+import org.springframework.feign.invoke.method.FeignMethodMetadata;
 
 import java.util.Map;
 
@@ -18,7 +19,7 @@ public class FeignBuildEncodedTemplate extends FeignTemplateFactory{
 
     private final Encoder encoder;
 
-    public FeignBuildEncodedTemplate(MethodMetadata metadata, Encoder encoder) {
+    public FeignBuildEncodedTemplate(FeignMethodMetadata metadata, Encoder encoder) {
         super(metadata);
         this.encoder = encoder;
     }

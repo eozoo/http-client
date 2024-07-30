@@ -3,6 +3,7 @@ package org.springframework.feign.invoke;
 import feign.*;
 import org.springframework.feign.FeignExceptionHandler;
 import org.springframework.feign.codec.FeignDecoder;
+import org.springframework.feign.invoke.method.FeignMethodMetadata;
 import org.springframework.feign.invoke.template.FeignTemplateFactory;
 
 import java.util.List;
@@ -29,7 +30,7 @@ public class FeignMethodHandlerFactory {
         this.exceptionHandler = exceptionHandler;
     }
 
-    public InvocationHandlerFactory.MethodHandler create(Target<?> target, MethodMetadata md,
+    public InvocationHandlerFactory.MethodHandler create(Target<?> target, FeignMethodMetadata md,
                                                          FeignTemplateFactory buildTemplateFromArgs, Request.Options options, FeignDecoder decoder, org.slf4j.Logger logger) {
         return new FeignSyncInvoker(target,
                 client, retryer, requestInterceptors, md, buildTemplateFromArgs, options, decoder, logger, exceptionHandler);

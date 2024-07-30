@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class FeignRequestTemplate {
 
-    private String protocolUrl;
+    private String hostUrl;
 
     private RequestTemplate template;
 

@@ -63,7 +63,7 @@ public class FeignTarget<T> implements Target<T> {
             prasedName = serviceChooser.choose(name);
         }
 
-        String prasedUrl = "";
+        String prasedUrl = url;
         if(StringUtils.hasText(url) && url.contains("${")){
             prasedUrl = valueResolver.resolveStringValue(url);
         }

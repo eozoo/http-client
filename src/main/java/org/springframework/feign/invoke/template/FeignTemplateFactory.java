@@ -1,8 +1,8 @@
 package org.springframework.feign.invoke.template;
 
-import feign.MethodMetadata;
 import feign.Param;
 import feign.RequestTemplate;
+import org.springframework.feign.invoke.method.FeignMethodMetadata;
 
 import java.util.*;
 
@@ -16,11 +16,11 @@ import static feign.Util.checkState;
  */
 public class FeignTemplateFactory {
 
-    protected final MethodMetadata metadata;
+    protected final FeignMethodMetadata metadata;
     private final Map<Integer, Param.Expander> indexToExpander = new LinkedHashMap<Integer, Param.Expander>();
 
     @SuppressWarnings("deprecation")
-    public FeignTemplateFactory(MethodMetadata metadata) {
+    public FeignTemplateFactory(FeignMethodMetadata metadata) {
         this.metadata = metadata;
         if (metadata.indexToExpander() != null) {
             indexToExpander.putAll(metadata.indexToExpander());
@@ -140,11 +140,11 @@ public class FeignTemplateFactory {
 
     protected FeignRequestTemplate resolve(Object[] argv, RequestTemplate template, Map<String, Object> variables) {
         FeignRequestTemplate feignRequestTemplate = new FeignRequestTemplate();
-        Object protocolUrl = variables.remove("protocolUrl");
-        if(protocolUrl != null){
-            feignRequestTemplate.setProtocolUrl(protocolUrl.toString());
-        }
         feignRequestTemplate.setTemplate(template.resolve(variables));
+        if(metadata.hostIndex() != null){
+            Object url = argv[metadata.hostIndex()];
+            feignRequestTemplate.setHostUrl(url.toString());
+        }
         return feignRequestTemplate;
     }
 }
