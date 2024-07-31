@@ -91,7 +91,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
             logger.error(">< {}ms {} {}", cost, e.getMessage(), url);
             if(httpType != null){
                 // 如果响应类型是HttpResponse，没有调成功也构造一个HttpResponse返回，防止上层需要识别处理
-                return new HttpResponse<>(500, new HttpHeaders(), null);
+                return new HttpResponse<>(500, new HttpHeaders(), e.getMessage());
             }else{
                 throw new RemoteException(url, format("%sms %s %s", cost, e.getMessage(), url));
             }
