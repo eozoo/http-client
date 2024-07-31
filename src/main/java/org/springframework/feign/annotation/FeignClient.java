@@ -5,6 +5,7 @@ import org.springframework.core.annotation.AliasFor;
 import org.springframework.feign.NULL;
 import org.springframework.feign.codec.EJacksonDecoder;
 import org.springframework.feign.codec.EJacksonEncoder;
+import org.springframework.stereotype.Component;
 
 import java.lang.annotation.*;
 
@@ -19,6 +20,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target({TYPE})
 @Retention(RUNTIME)
 @Documented
+@Component
 public @interface FeignClient {
 
 	@AliasFor(attribute = "url")
