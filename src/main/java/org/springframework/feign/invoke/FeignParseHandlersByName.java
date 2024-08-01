@@ -46,7 +46,7 @@ public class FeignParseHandlersByName {
     public Map<String, InvocationHandlerFactory.MethodHandler> apply(Target<?> key) {
         List<FeignMethodMetadata> metadata = contract.parseAndValidatateMetadata(key.type());
 
-        Map<String, InvocationHandlerFactory.MethodHandler> result = new LinkedHashMap<String, InvocationHandlerFactory.MethodHandler>();
+        Map<String, InvocationHandlerFactory.MethodHandler> result = new LinkedHashMap<>();
         for (FeignMethodMetadata md : metadata) {
             FeignTemplateFactory buildTemplate;
             if (!md.formParams().isEmpty() && md.template().bodyTemplate() == null) {

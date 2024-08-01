@@ -2,6 +2,7 @@ package org.springframework.feign.invoke.method;
 
 import feign.*;
 import org.springframework.feign.annotation.Host;
+import org.springframework.feign.annotation.Options;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -176,7 +177,7 @@ public interface FeignContract {
         }
 
         @Override
-        protected void processAnnotationOnMethod(FeignMethodMetadata data, Annotation methodAnnotation, Method method) {
+        protected void processAnnotationOnMethod(FeignMethodMetadata metadata, Annotation methodAnnotation, Method method) {
             Class<? extends Annotation> annotationType = methodAnnotation.annotationType();
             if (annotationType == RequestLine.class) {
                 String requestLine = ((RequestLine) methodAnnotation).value();
@@ -186,20 +187,20 @@ public interface FeignContract {
                 if (requestLine.indexOf(' ') == -1) {
                     checkState(requestLine.indexOf('/') == -1,
                             "RequestLine annotation didn't start with an HTTP verb on method %s.", method.getName());
-                    data.template().method(requestLine);
+                    metadata.template().method(requestLine);
                     return;
                 }
 
-                data.template().method(requestLine.substring(0, requestLine.indexOf(' ')));
+                metadata.template().method(requestLine.substring(0, requestLine.indexOf(' ')));
                 if (requestLine.indexOf(' ') == requestLine.lastIndexOf(' ')) {
                     // no HTTP version is ok
-                    data.template().append(requestLine.substring(requestLine.indexOf(' ') + 1));
+                    metadata.template().append(requestLine.substring(requestLine.indexOf(' ') + 1));
                 } else {
                     // skip HTTP version
-                    data.template().append(requestLine.substring(requestLine.indexOf(' ') + 1, requestLine.lastIndexOf(' ')));
+                    metadata.template().append(requestLine.substring(requestLine.indexOf(' ') + 1, requestLine.lastIndexOf(' ')));
                 }
 
-                data.template().decodeSlash(((RequestLine) methodAnnotation).decodeSlash());
+                metadata.template().decodeSlash(((RequestLine) methodAnnotation).decodeSlash());
 
             } else if (annotationType == Body.class) {
                 String body = ((Body) methodAnnotation).value();
@@ -207,15 +208,19 @@ public interface FeignContract {
                         "Body annotation was empty on method %s.", method.getName());
 
                 if (body.indexOf('{') == -1) {
-                    data.template().body(body);
+                    metadata.template().body(body);
                 } else {
-                    data.template().bodyTemplate(body);
+                    metadata.template().bodyTemplate(body);
                 }
             } else if (annotationType == Headers.class) {
                 String[] headersOnMethod = ((Headers) methodAnnotation).value();
                 checkState(headersOnMethod.length > 0,
                         "Headers annotation was empty on method %s.", method.getName());
-                data.template().headers(toMap(headersOnMethod));
+                metadata.template().headers(toMap(headersOnMethod));
+            } else if (annotationType == Options.class) {
+                Options options = (Options) methodAnnotation;
+                metadata.readTimeoutMillis(options.readTimeoutMillis());
+                metadata.connectTimeoutMillis(options.connectTimeoutMillis());
             }
         }
 

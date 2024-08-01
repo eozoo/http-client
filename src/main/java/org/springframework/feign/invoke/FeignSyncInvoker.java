@@ -50,7 +50,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
     private final org.springframework.feign.retryer.Retryer retryer;
     private final List<RequestInterceptor> requestInterceptors;
     private final FeignTemplateFactory buildTemplateFromArgs;
-    private final Request.Options options;
+    private Request.Options options;
     private final FeignDecoder decoder;
 
     private final FeignExceptionHandler exceptionHandler;
@@ -263,6 +263,17 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
             interceptor.apply(feignTemplate.getTemplate());
         }
         if(target instanceof FeignTarget feignTarget){
+            // 方法Options注解指定的超时优先级更高
+            int connectTimeoutMillis = options.connectTimeoutMillis();
+            int readTimeoutMillis = options.readTimeoutMillis();
+            if(metadata.connectTimeoutMillis() != -1){
+                connectTimeoutMillis = metadata.connectTimeoutMillis();
+            }
+            if(metadata.readTimeoutMillis() != -1){
+                readTimeoutMillis = metadata.readTimeoutMillis();
+            }
+            this.options = new Request.Options(connectTimeoutMillis, readTimeoutMillis);
+            // 设置url
             return feignTarget.apply(new RequestTemplate(feignTemplate.getTemplate()), feignTemplate.getHostUrl());
         }else{
             return target.apply(new RequestTemplate(feignTemplate.getTemplate()));

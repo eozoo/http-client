@@ -86,8 +86,10 @@ public class FeignBuilder {
     public Feign build(org.slf4j.Logger logger) {
         FeignMethodHandlerFactory methodHandlerFactory =
                 new FeignMethodHandlerFactory(client, retryer, requestInterceptors, exceptionHandler);
+
         FeignParseHandlersByName parseHandlersByName =
                 new FeignParseHandlersByName(contract, options, encoder, decoder, methodHandlerFactory, logger);
+
         return new FeignImplement(parseHandlersByName, invocationHandlerFactory);
     }
 }

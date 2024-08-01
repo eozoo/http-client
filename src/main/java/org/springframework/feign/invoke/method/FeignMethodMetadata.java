@@ -15,6 +15,8 @@ import java.util.*;
 public class FeignMethodMetadata implements Serializable {
     private String configKey;
     private transient Type returnType;
+    private int connectTimeoutMillis = -1;
+    private int readTimeoutMillis = -1;
     private Integer hostIndex;
     private Integer urlIndex;
     private Integer bodyIndex;
@@ -46,6 +48,24 @@ public class FeignMethodMetadata implements Serializable {
 
     public FeignMethodMetadata returnType(Type returnType) {
         this.returnType = returnType;
+        return this;
+    }
+
+    public int connectTimeoutMillis(){
+        return connectTimeoutMillis;
+    }
+
+    public FeignMethodMetadata connectTimeoutMillis(int connectTimeoutMillis){
+        this.connectTimeoutMillis = connectTimeoutMillis;
+        return this;
+    }
+
+    public int readTimeoutMillis(){
+        return readTimeoutMillis;
+    }
+
+    public FeignMethodMetadata readTimeoutMillis(int readTimeoutMillis){
+        this.readTimeoutMillis = readTimeoutMillis;
         return this;
     }
 
