@@ -1,5 +1,10 @@
 package org.springframework.feign.invoke;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import feign.*;
 import org.springframework.feign.FeignExceptionHandler;
 import org.springframework.feign.codec.FeignDecoder;
@@ -15,9 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static feign.Util.checkNotNull;
@@ -28,6 +31,18 @@ import static java.lang.String.format;
  */
 public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler {
     private static final long MAX_RESPONSE_BUFFER_SIZE = 8192L;
+
+    private static final ObjectMapper RESPONSE_MAPEER = new ObjectMapper();
+
+    static{
+        RESPONSE_MAPEER.setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false)
+                .registerModules(Collections.emptyList());
+        RESPONSE_MAPEER.setTimeZone(TimeZone.getDefault());
+    }
+
     private final org.slf4j.Logger logger;
     private final FeignMethodMetadata metadata;
     private final Target<?> target;
@@ -159,7 +174,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
             if(body == null || paramType.equals(String.class)){
                 return new HttpResponse<>(response.status(), headers, body);
             }else{
-                return new HttpResponse<>(response.status(), headers, JsonUtil.read(body, paramType));
+                return new HttpResponse<>(response.status(), headers, readType(body, paramType));
             }
         }else if(status > 200 && status < 300){
             logger.warn(">< {} {}ms {} {}", status, cost, url, body);
@@ -192,7 +207,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
             if(body == null || paramType.equals(String.class)){
                 return new ResponseEntity<>(body, headers, response.status());
             }else{
-                return new ResponseEntity<>(JsonUtil.read(body, paramType), headers, response.status());
+                return new ResponseEntity<>(readType(body, paramType), headers, response.status());
             }
         }else if(body == null){
             logger.error(">< {} {}ms {}", status, cost, url);
@@ -252,5 +267,9 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         }else{
             return target.apply(new RequestTemplate(feignTemplate.getTemplate()));
         }
+    }
+
+    private static Object readType(String json, Type type) throws IOException {
+        return RESPONSE_MAPEER.readValue(json, RESPONSE_MAPEER.constructType(type));
     }
 }
