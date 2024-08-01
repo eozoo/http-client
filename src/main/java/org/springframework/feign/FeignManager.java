@@ -155,7 +155,7 @@ public class FeignManager {
     static Encoder encoder(FeignClient feign) throws Exception {
         if (JacksonEncoder.class.isAssignableFrom(feign.encoder())) {
             ObjectMapper encoderMapper = new ObjectMapper();
-            encoderMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL).configure(SerializationFeature.INDENT_OUTPUT, true)
+            encoderMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
                     .registerModules(Collections.emptyList());
             encoderMapper.setTimeZone(TimeZone.getDefault());
             encoderMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)

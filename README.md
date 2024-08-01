@@ -19,6 +19,8 @@
 
 #### 1. 指定服务url
 
+> Header需要自己声明，默认没有设置，比如一般的Post请求需要设置：Content-Type=application/json
+
 ```java
 @FeignClient(url = "${feign.service-user.url}")
 public interface UserService {
