@@ -7,6 +7,11 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.*;
 
+/**
+ *
+ * @author shanhuiming
+ *
+ */
 public class FeignMethodMetadata implements Serializable {
     private String configKey;
     private transient Type returnType;
@@ -17,12 +22,10 @@ public class FeignMethodMetadata implements Serializable {
     private Integer queryMapIndex;
     private boolean queryMapEncoded;
     private transient Type bodyType;
-    private RequestTemplate template = new RequestTemplate();
-    private List<String> formParams = new ArrayList<String>();
-    private Map<Integer, Collection<String>> indexToName =
-            new LinkedHashMap<Integer, Collection<String>>();
-    private Map<Integer, Class<? extends Param.Expander>> indexToExpanderClass =
-            new LinkedHashMap<Integer, Class<? extends Param.Expander>>();
+    private final RequestTemplate template = new RequestTemplate();
+    private final List<String> formParams = new ArrayList<>();
+    private final Map<Integer, Collection<String>> indexToName = new LinkedHashMap<>();
+    private final Map<Integer, Class<? extends Param.Expander>> indexToExpanderClass = new LinkedHashMap<>();
     private transient Map<Integer, Param.Expander> indexToExpander;
 
     FeignMethodMetadata() {

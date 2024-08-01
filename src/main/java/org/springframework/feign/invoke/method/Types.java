@@ -4,6 +4,11 @@ import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 
+/**
+ *
+ * @author shanhuiming
+ *
+ */
 public class Types {
 
     private static final Type[] EMPTY_TYPE_ARRAY = new Type[0];
