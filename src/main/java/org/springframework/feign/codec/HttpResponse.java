@@ -34,8 +34,18 @@ public class HttpResponse<T> extends ResponseEntity<T> {
         super(body, headers, httpStatus);
     }
 
+    public HttpResponse(int httpStatus, @Nullable MultiValueMap<String, String> headers, @Nullable T body, String message) {
+        super(body, headers, httpStatus);
+        this.message = message;
+    }
+
     public HttpResponse(HttpCode httpCode, @Nullable MultiValueMap<String, String> headers, @Nullable T body) {
         super(body, headers, httpCode.getStatus());
+    }
+
+    public HttpResponse(HttpCode httpCode, @Nullable MultiValueMap<String, String> headers, @Nullable T body, String message) {
+        super(body, headers, httpCode.getStatus());
+        this.message = message;
     }
 
     /**

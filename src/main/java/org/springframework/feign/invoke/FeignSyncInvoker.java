@@ -14,6 +14,7 @@ import org.springframework.feign.invoke.template.FeignRequestTemplate;
 import org.springframework.feign.invoke.template.FeignTemplateFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
@@ -157,9 +158,16 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
     }
 
     private HttpResponse<?> parseHttpResponse(Type paramType, Response response, int status, String url, long cost) throws IOException {
+        String requestId = "";
         // Header信息
         HttpHeaders headers = new HttpHeaders();
         for (Map.Entry<String, Collection<String>> entry : response.headers().entrySet()) {
+            if(entry.getKey().equals("requestId")){
+                Collection<String> collection = entry.getValue();
+                if(!CollectionUtils.isEmpty(collection)){
+                    requestId = collection.stream().findFirst().get();
+                }
+            }
             headers.put(entry.getKey(), entry.getValue().stream().toList());
         }
 
@@ -170,19 +178,19 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         }
 
         if(status == 200){
-            logger.info(">< {} {}ms {}", status, cost, url);
+            logger.info(">< {} {}ms {} {}", status, cost, requestId, url);
             if(body == null || paramType.equals(String.class)){
                 return new HttpResponse<>(response.status(), headers, body);
             }else{
                 return new HttpResponse<>(response.status(), headers, readType(body, paramType));
             }
         }else if(status > 200 && status < 300){
-            logger.warn(">< {} {}ms {} {}", status, cost, url, body);
+            logger.warn(">< {} {}ms {} {} {}", status, cost, requestId, url, body);
             HttpResponse<?> httpResponse = new HttpResponse<>(response.status(), headers, null);
             httpResponse.setMessage(body);
             return httpResponse;
         }else{
-            logger.error(">< {} {}ms {} {}", status, cost, url, body);
+            logger.error(">< {} {}ms {} {} {}", status, cost, requestId, url, body);
             HttpResponse<?> httpResponse = new HttpResponse<>(response.status(), headers, null);
             httpResponse.setMessage(body);
             return httpResponse;

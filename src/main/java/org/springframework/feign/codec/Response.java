@@ -22,9 +22,6 @@ import java.util.function.Predicate;
 @Data
 public class Response<T> {
 
-	/** 请求Id */
-	private String requestId;
-
 	/** 响应码 */
 	private int code;
 
