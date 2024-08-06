@@ -4,16 +4,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Response;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.util.CollectionUtils;
 
 import java.io.BufferedReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 
 /**
  *
@@ -38,16 +34,6 @@ public class EJacksonDecoder implements FeignDecoder {
 
     @Override
     public Object decode(Response response, Type type, String url, long cost, int status, org.slf4j.Logger logger) throws Exception {
-        String requestId = "";
-        for (Map.Entry<String, Collection<String>> entry : response.headers().entrySet()) {
-            if(entry.getKey().equals("requestId")){
-                Collection<String> collection = entry.getValue();
-                if(!CollectionUtils.isEmpty(collection)){
-                    requestId = collection.stream().findFirst().get();
-                }
-            }
-        }
-
         Reader reader = response.body().asReader();
         if (!reader.markSupported()) {
             reader = new BufferedReader(reader, 1);
@@ -60,7 +46,7 @@ public class EJacksonDecoder implements FeignDecoder {
         reader.reset();
 
         if (void.class == type) {
-            logger.info(">< {} {}ms {} {}", status, cost, requestId, url);
+            logger.info(">< {} {}ms {}", status, cost, url);
             return null;
         }
 
@@ -69,15 +55,15 @@ public class EJacksonDecoder implements FeignDecoder {
             if(org.springframework.feign.codec.Response.class.isAssignableFrom(obj.getClass())){
                 org.springframework.feign.codec.Response resp = (org.springframework.feign.codec.Response)obj;
                 if(HttpStatus.OK.value() != resp.getCode()){
-                    logger.error(">< {} {}ms {} {code={}, msg={}} {}", status, cost, requestId, resp.getCode(), resp.getMsg(), url);
+                    logger.error(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
                 }else{
-                    logger.info(">< {} {}ms {} {code={}, msg={}} {}", status, cost, requestId, resp.getCode(), resp.getMsg(), url);
+                    logger.info(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
                 }
             }else{
-                logger.info(">< {} {}ms {} {}", status, cost, requestId, url);
+                logger.info(">< {} {}ms {}", status, cost, url);
             }
         }else{
-            logger.info(">< {} {}ms {} {}", status, cost, requestId, url);
+            logger.info(">< {} {}ms {}", status, cost, url);
         }
         return obj;
     }
