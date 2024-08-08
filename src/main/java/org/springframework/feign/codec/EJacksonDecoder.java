@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Response;
-import org.springframework.http.HttpStatus;
 
 import java.io.BufferedReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  *
@@ -54,7 +54,7 @@ public class EJacksonDecoder implements FeignDecoder {
         if(obj != null){
             if(org.springframework.feign.codec.Response.class.isAssignableFrom(obj.getClass())){
                 org.springframework.feign.codec.Response resp = (org.springframework.feign.codec.Response)obj;
-                if(HttpStatus.OK.value() != resp.getCode()){
+                if(!Objects.equals(ResponseCode.SUCCESS.getCode(), resp.getCode())){
                     logger.error(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
                 }else{
                     logger.info(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());

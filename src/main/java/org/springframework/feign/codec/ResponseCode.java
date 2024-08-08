@@ -8,8 +8,6 @@
  */
 package org.springframework.feign.codec;
 
-import org.springframework.http.HttpStatus;
-
 /**
  * @author shanhuiming
  */
@@ -18,58 +16,58 @@ public enum ResponseCode implements HttpCode {
     /**
      * 200
      */
-    OK(HttpStatus.OK.value(), "Success"),
+    SUCCESS("200", "Success"),
 
     /**
      * 202
      */
-    ACCEPTED(HttpStatus.ACCEPTED.value(), "Accepted"),
+    ACCEPTED("202", "Accepted"),
 
     /**
      * 400
      */
-    BAD_REQUEST(HttpStatus.BAD_REQUEST.value(), "Bad Request"),
+    BAD_REQUEST("400", "Bad Request"),
 
     /**
      * 401
      */
-    UNAUTHORIZED(HttpStatus.UNAUTHORIZED.value(), "Unauthorized"),
+    UNAUTHORIZED("401", "Unauthorized"),
 
     /**
      * 403
      */
-    FORBIDDEN(HttpStatus.FORBIDDEN.value(), "Forbidden"),
+    FORBIDDEN("403", "Forbidden"),
 
     /**
      * 429
      */
-    TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS.value(), "Too Many Requests"),
+    TOO_MANY_REQUESTS("429", "Too Many Requests"),
 
     /**
      * 498
      */
-    TOKEN_INVALID_OR_EXPIRED(498, "Token changed or expired"),
+    TOKEN_INVALID_OR_EXPIRED("498", "Token changed or expired"),
 
     /**
      * 500
      */
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error"),
+    INTERNAL_SERVER_ERROR("500", "Internal Server Error"),
 
     /**
      * 597
      */
-    SYS_ERROR(597, "Business Error");
+    SYS_ERROR("597", "Business Error");
 
-    private final Integer code;
+    private final String code;
 
     private final String msg;
 
-    ResponseCode(Integer code, String msg) {
+    ResponseCode(String code, String msg) {
         this.code = code;
         this.msg = msg;
     }
 
-    public Integer getCode() {
+    public String getCode() {
         return code;
     }
 

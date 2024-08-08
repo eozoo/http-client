@@ -7,11 +7,11 @@ package org.springframework.feign.invoke;
  */
 public class RemoteAssertsException extends RemoteException {
 
-    public RemoteAssertsException(String url, int status, int code, String message) {
+    public RemoteAssertsException(String url, int status, String code, String message) {
         super(url, status, code, message);
     }
 
-    public RemoteAssertsException(String url, int status, int code, String message, Throwable cause) {
+    public RemoteAssertsException(String url, int status, String code, String message, Throwable cause) {
         super(url, status, code, message, cause);
     }
 }

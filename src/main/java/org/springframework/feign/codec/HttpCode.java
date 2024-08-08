@@ -19,7 +19,7 @@ public interface HttpCode {
     /**
      * 响应码
      */
-    Integer getCode();
+    String getCode();
 
     /**
      * 响应描述

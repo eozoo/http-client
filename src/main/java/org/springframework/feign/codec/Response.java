@@ -22,11 +22,11 @@ import java.util.function.Predicate;
 @Data
 public class Response<T> {
 
-	/** 响应码 */
-	private int code;
-
 	/** 响应数据 */
 	private T data;
+
+	/** 响应码 */
+	private String code;
 
 	/** 响应描述 */
 	private String msg;
@@ -38,7 +38,7 @@ public class Response<T> {
 
 	}
 
-	public Response(Integer status, Integer code, String msg, T data){
+	public Response(Integer status, String code, String msg, T data){
 		if(status!= null && status != HttpStatus.OK.value()){
 			ServletRequestAttributes attributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
 			if(attributes != null){
@@ -83,42 +83,42 @@ public class Response<T> {
 	 * http=200, code=200, msg="success", data=null
 	 */
 	public static <V> Response<V> success(){
-        return new Response<>(HttpStatus.OK.value(), HttpStatus.OK.value(), "success", null);
+        return new Response<>(HttpStatus.OK.value(), ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMsg(), null);
     }
 
 	/**
 	 * http=200, code=200, msg="success", data=#{data}
 	 */
 	public static <V> Response<V> success(V data){
-        return new Response<>(HttpStatus.OK.value(), HttpStatus.OK.value(), "success", data);
+        return new Response<>(HttpStatus.OK.value(), ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMsg(), data);
     }
 
 	/**
 	 * http=200, code=200, msg=#{msg}, data=#{data}
 	 */
 	public static <V> Response<V> success(V data, String msg){
-		return new Response<>(HttpStatus.OK.value(), HttpStatus.OK.value(), msg, data);
+		return new Response<>(HttpStatus.OK.value(), ResponseCode.SUCCESS.getCode(), msg, data);
 	}
 
 	/**
 	 * http=200, code=500, msg="Internal Server Error", data=null
 	 */
 	public static <V> Response<V> error(){
-		return new Response<>(HttpStatus.OK.value(), HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), null);
+		return new Response<>(HttpStatus.OK.value(), ResponseCode.INTERNAL_SERVER_ERROR.getCode(), ResponseCode.INTERNAL_SERVER_ERROR.getMsg(), null);
 	}
 
 	/**
 	 * http=200, code=500, msg=#{msg}, data=null
 	 */
 	public static <V> Response<V> error(String msg){
-		return new Response<>(HttpStatus.OK.value(), HttpStatus.INTERNAL_SERVER_ERROR.value(), msg, null);
+		return new Response<>(HttpStatus.OK.value(), ResponseCode.INTERNAL_SERVER_ERROR.getCode(), msg, null);
 	}
 
 	/**
 	 * http=200, code=200, msg="success", data=#{page}
 	 */
 	public static <E> Response<Page<E>> page(List<E> list){
-    	Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), HttpStatus.OK.value(), "success", null);
+    	Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMsg(), null);
     	if(list == null){
         	list = new ArrayList<>();
         }
@@ -135,7 +135,7 @@ public class Response<T> {
 	 * http=200, code=200, msg="success", data=#{page}
 	 */
 	public static <E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<E> page){
-		Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), HttpStatus.OK.value(), "success", null);
+		Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMsg(), null);
 		response.setData(new Page<>(page.getRecords(), page.getTotal()));
 		return response;
 	}
@@ -144,7 +144,7 @@ public class Response<T> {
 	 * http=200, code=200, msg="success", data=#{page}
 	 */
 	public static <T, E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page, Class<E> clazz){
-		Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), HttpStatus.OK.value(), "success", null);
+		Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMsg(), null);
 		response.setData(new Page<>(copyList(page.getRecords(), clazz), page.getTotal()));
 		return response;
 	}
@@ -153,7 +153,7 @@ public class Response<T> {
 	 * http=200, code=200, msg="success", data=#{page}
 	 */
 	public static <T, E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page, Function<T, E> mapper) {
-		Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), HttpStatus.OK.value(), "success", null);
+		Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMsg(), null);
 		response.setData(new Page<>(page.getRecords().stream().map(mapper).toList(), page.getTotal()));
 		return response;
 	}
@@ -162,7 +162,7 @@ public class Response<T> {
 	 * http=200, code=200, msg="success", data=#{page}
 	 */
 	public static <T, E> Response<Page<E>> page(com.baomidou.mybatisplus.extension.plugins.pagination.Page<T> page, Function<T, E> mapper, Predicate<T> filter) {
-		Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), HttpStatus.OK.value(), "success", null);
+		Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMsg(), null);
 		response.setData(new Page<>(page.getRecords().stream().filter(filter).map(mapper).toList(), page.getTotal()));
 		return response;
 	}

@@ -8,8 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -84,13 +82,13 @@ public class HttpResponse<T> extends ResponseEntity<T> {
      * status=200, body=null
      */
     public static <V> HttpResponse<V> success(){
-        return new HttpResponse<>(ResponseCode.OK, null, null);
+        return new HttpResponse<>(ResponseCode.SUCCESS, null, null);
     }
 
     /**
      * status=200, body=#{data}
      */
     public static <V> HttpResponse<V> success(V data) {
-        return new HttpResponse<>(ResponseCode.OK, null, data);
+        return new HttpResponse<>(ResponseCode.SUCCESS, null, data);
     }
 }

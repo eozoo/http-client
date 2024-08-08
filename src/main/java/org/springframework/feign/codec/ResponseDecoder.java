@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.Module;
 import feign.Response;
 import org.springframework.feign.invoke.RemoteAssertsException;
-import org.springframework.http.HttpStatus;
 
 import java.io.BufferedReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  *
@@ -56,7 +56,7 @@ public class ResponseDecoder implements FeignDecoder {
 
         org.springframework.feign.codec.Response<?> resp =
                 mapper.readValue(reader, org.springframework.feign.codec.Response.class);
-        if(HttpStatus.OK.value() != resp.getCode()){
+        if(!Objects.equals(ResponseCode.SUCCESS.getCode(), resp.getCode())){
             logger.error(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
             throw new RemoteAssertsException(url, status, resp.getCode(), resp.getMsg());
         }

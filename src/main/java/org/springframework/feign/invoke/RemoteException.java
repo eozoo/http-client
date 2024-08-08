@@ -11,7 +11,7 @@ public class RemoteException extends RuntimeException {
 
     private final Integer status;
 
-    private final Integer code;
+    private final String code;
 
     public RemoteException(String url, String message) {
         super(message);
@@ -20,14 +20,14 @@ public class RemoteException extends RuntimeException {
         this.code = null;
     }
 
-    public RemoteException(String url, Integer status, Integer code, String message) {
+    public RemoteException(String url, Integer status, String code, String message) {
         super(message);
         this.url = url;
         this.status = status;
         this.code = code;
     }
 
-    public RemoteException(String url, Integer status, Integer code, String message, Throwable cause) {
+    public RemoteException(String url, Integer status, String code, String message, Throwable cause) {
         super(message, cause);
         this.url = url;
         this.status = status;
@@ -42,7 +42,7 @@ public class RemoteException extends RuntimeException {
         return status;
     }
 
-    public Integer code(){
+    public String code(){
         return code;
     }
 }
