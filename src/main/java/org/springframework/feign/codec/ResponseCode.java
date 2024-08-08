@@ -56,7 +56,7 @@ public enum ResponseCode implements HttpCode {
     /**
      * 597
      */
-    SYS_ERROR("597", "Business Error");
+    SYS_ERROR("597", "System Error");
 
     private final String code;
 
