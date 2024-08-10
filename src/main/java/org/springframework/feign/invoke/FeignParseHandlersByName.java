@@ -9,13 +9,12 @@ import java.util.Map;
 import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.invoke.method.FeignContract;
 import org.springframework.feign.invoke.method.FeignMethodMetadata;
-import org.springframework.feign.invoke.template.FeignBuildEncodedTemplate;
-import org.springframework.feign.invoke.template.FeignBuildFormEncodedTemplate;
-import org.springframework.feign.invoke.template.FeignTemplateFactory;
+import org.springframework.feign.invoke.template.FeignBodyRequestFactory;
+import org.springframework.feign.invoke.template.FeignFormRequestFactory;
+import org.springframework.feign.invoke.template.FeignMultipartRequestFactory;
+import org.springframework.feign.invoke.template.FeignRequestFactory;
 
-import feign.Contract;
 import feign.InvocationHandlerFactory;
-import feign.MethodMetadata;
 import feign.Request;
 import feign.Target;
 import feign.codec.Encoder;
@@ -44,19 +43,23 @@ public class FeignParseHandlersByName {
     }
 
     public Map<String, InvocationHandlerFactory.MethodHandler> apply(Target<?> key) {
-        List<FeignMethodMetadata> metadata = contract.parseAndValidatateMetadata(key.type());
-
+        List<FeignMethodMetadata> metaList = contract.parseAndValidateMetadata(key.type());
         Map<String, InvocationHandlerFactory.MethodHandler> result = new LinkedHashMap<>();
-        for (FeignMethodMetadata md : metadata) {
-            FeignTemplateFactory buildTemplate;
-            if (!md.formParams().isEmpty() && md.template().bodyTemplate() == null) {
-                buildTemplate = new FeignBuildFormEncodedTemplate(md, encoder);
-            } else if (md.bodyIndex() != null) {
-                buildTemplate = new FeignBuildEncodedTemplate(md, encoder);
+        for (FeignMethodMetadata meta : metaList) {
+            FeignRequestFactory feignRequestFactory;
+            if(meta.multipartFileIndex() != null){
+                // multipart/form-data
+                feignRequestFactory = new FeignMultipartRequestFactory(meta);
+            } else if (!meta.formParams().isEmpty() && meta.template().bodyTemplate() == null) {
+                // 存在表单参数，且body为null
+                feignRequestFactory = new FeignFormRequestFactory(meta, encoder);
+            } else if (meta.bodyIndex() != null) {
+                // 存在body
+                feignRequestFactory = new FeignBodyRequestFactory(meta, encoder);
             } else {
-                buildTemplate = new FeignTemplateFactory(md);
+                feignRequestFactory = new FeignRequestFactory(meta);
             }
-            result.put(md.configKey(), factory.create(key, md, buildTemplate, options, decoder, logger));
+            result.put(meta.configKey(), factory.create(key, meta, feignRequestFactory, options, decoder, logger));
         }
         return result;
     }

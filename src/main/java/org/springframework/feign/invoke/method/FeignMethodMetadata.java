@@ -15,9 +15,6 @@ import java.util.*;
 public class FeignMethodMetadata implements Serializable {
     private String configKey;
     private transient Type returnType;
-    private int connectTimeoutMillis = -1;
-    private int readTimeoutMillis = -1;
-    private Integer hostIndex;
     private Integer urlIndex;
     private Integer bodyIndex;
     private Integer headerMapIndex;
@@ -29,6 +26,13 @@ public class FeignMethodMetadata implements Serializable {
     private final Map<Integer, Collection<String>> indexToName = new LinkedHashMap<>();
     private final Map<Integer, Class<? extends Param.Expander>> indexToExpanderClass = new LinkedHashMap<>();
     private transient Map<Integer, Param.Expander> indexToExpander;
+    private int connectTimeoutMillis = -1;
+    private int readTimeoutMillis = -1;
+    private Integer hostIndex;
+    private Integer multipartFileIndex;
+    private String multipartFileName;
+    private String multipartFileBoundary;
+    private Integer multipartFormIndex;
 
     FeignMethodMetadata() {
     }
@@ -75,6 +79,42 @@ public class FeignMethodMetadata implements Serializable {
 
     public FeignMethodMetadata hostIndex(Integer hostIndex){
         this.hostIndex = hostIndex;
+        return this;
+    }
+
+    public Integer multipartFileIndex(){
+        return multipartFileIndex;
+    }
+
+    public FeignMethodMetadata multipartFileIndex(Integer multipartFileIndex){
+        this.multipartFileIndex = multipartFileIndex;
+        return this;
+    }
+
+    public String multipartFileName(){
+        return multipartFileName;
+    }
+
+    public FeignMethodMetadata multipartFileName(String multipartFileName){
+        this.multipartFileName = multipartFileName;
+        return this;
+    }
+
+    public String multipartFileBoundary(){
+        return multipartFileBoundary;
+    }
+
+    public FeignMethodMetadata multipartFileBoundary(String multipartFileBoundary){
+        this.multipartFileBoundary = multipartFileBoundary;
+        return this;
+    }
+
+    public Integer multipartFormIndex(){
+        return multipartFormIndex;
+    }
+
+    public FeignMethodMetadata multipartFormIndex(Integer multipartFormIndex){
+        this.multipartFormIndex = multipartFormIndex;
         return this;
     }
 

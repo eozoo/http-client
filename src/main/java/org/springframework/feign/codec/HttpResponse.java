@@ -47,6 +47,26 @@ public class HttpResponse<T> extends ResponseEntity<T> {
     }
 
     /**
+     * 获取Http Header
+     */
+    public String getHeader(String headerName){
+        HttpHeaders headers = this.getHeaders();
+        List<String> list = headers.get(headerName);
+        if(list == null || list.isEmpty()){
+            return null;
+        }
+        return list.get(0);
+    }
+
+    /**
+     * 获取Http Header
+     */
+    public List<String> getHeaders(String headerName){
+        HttpHeaders headers = this.getHeaders();
+        return headers.get(headerName);
+    }
+
+    /**
      * 设置Http Header
      */
     public HttpResponse<T> setHeader(String key, String... values){
@@ -56,10 +76,16 @@ public class HttpResponse<T> extends ResponseEntity<T> {
         return new HttpResponse<>(this.getStatusCode().value(), headers, this.getBody());
     }
 
+    /**
+     * status == 200
+     */
     public boolean isSuccess(){
         return getStatusCodeValue() == 200;
     }
 
+    /**
+     * status != 200
+     */
     public boolean isFailed(){
         return getStatusCodeValue() != 200;
     }

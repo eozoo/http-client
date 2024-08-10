@@ -5,6 +5,7 @@ import feign.codec.Encoder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.feign.FeignExceptionHandler;
 import org.springframework.feign.codec.FeignDecoder;
+import org.springframework.feign.invoke.method.DefaultFeignContract;
 import org.springframework.feign.invoke.method.FeignContract;
 import org.springframework.feign.retryer.DefaultRetryer;
 import org.springframework.util.StringValueResolver;
@@ -18,15 +19,14 @@ import java.util.List;
  *
  */
 public class FeignBuilder {
-    private final List<RequestInterceptor> requestInterceptors = new ArrayList<>();
-    private final FeignContract contract = new FeignContract.Default();
     private Client client = new Client.Default(null, null);
+    private final FeignContract contract = new DefaultFeignContract();
     private org.springframework.feign.retryer.Retryer retryer = new DefaultRetryer();
     private Encoder encoder = new Encoder.Default();
     private FeignDecoder decoder = new FeignDecoder.StringDecoder();
     private Request.Options options = new Request.Options();
     private InvocationHandlerFactory invocationHandlerFactory = new InvocationHandlerFactory.Default();
-
+    private final List<RequestInterceptor> requestInterceptors = new ArrayList<>();
     private FeignExceptionHandler exceptionHandler;
 
     public void client(Client client) {

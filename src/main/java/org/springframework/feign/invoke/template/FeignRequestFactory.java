@@ -4,6 +4,7 @@ import feign.Param;
 import feign.RequestTemplate;
 import org.springframework.feign.invoke.method.FeignMethodMetadata;
 
+import java.io.IOException;
 import java.util.*;
 
 import static feign.Util.checkArgument;
@@ -14,13 +15,13 @@ import static feign.Util.checkState;
  * @author shanhuiming
  *
  */
-public class FeignTemplateFactory {
+public class FeignRequestFactory {
 
     protected final FeignMethodMetadata metadata;
-    private final Map<Integer, Param.Expander> indexToExpander = new LinkedHashMap<Integer, Param.Expander>();
+    private final Map<Integer, Param.Expander> indexToExpander = new LinkedHashMap<>();
 
     @SuppressWarnings("deprecation")
-    public FeignTemplateFactory(FeignMethodMetadata metadata) {
+    public FeignRequestFactory(FeignMethodMetadata metadata) {
         this.metadata = metadata;
         if (metadata.indexToExpander() != null) {
             indexToExpander.putAll(metadata.indexToExpander());
@@ -32,15 +33,13 @@ public class FeignTemplateFactory {
         for (Map.Entry<Integer, Class<? extends Param.Expander>> indexToExpanderClass : metadata.indexToExpanderClass().entrySet()) {
             try {
                 indexToExpander.put(indexToExpanderClass.getKey(), indexToExpanderClass.getValue().newInstance());
-            } catch (InstantiationException e) {
-                throw new IllegalStateException(e);
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 throw new IllegalStateException(e);
             }
         }
     }
 
-    public FeignRequestTemplate create(Object[] argv) {
+    public FeignRequestTemplate create(Object[] argv) throws IOException {
         RequestTemplate template = new RequestTemplate(metadata.template());
         if (metadata.urlIndex() != null) {
             int urlIndex = metadata.urlIndex();
@@ -62,7 +61,7 @@ public class FeignTemplateFactory {
             }
         }
 
-        FeignRequestTemplate feignTemplate = resolve(argv, template, varBuilder); // TODO
+        FeignRequestTemplate feignTemplate = resolve(argv, template, varBuilder);
 
         if (metadata.queryMapIndex() != null) {
             // add query map parameters after initial resolve so that they take
@@ -138,7 +137,7 @@ public class FeignTemplateFactory {
         return template;
     }
 
-    protected FeignRequestTemplate resolve(Object[] argv, RequestTemplate template, Map<String, Object> variables) {
+    protected FeignRequestTemplate resolve(Object[] argv, RequestTemplate template, Map<String, Object> variables) throws IOException {
         FeignRequestTemplate feignRequestTemplate = new FeignRequestTemplate();
         feignRequestTemplate.setTemplate(template.resolve(variables));
         if(metadata.hostIndex() != null){

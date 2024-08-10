@@ -11,12 +11,14 @@ import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.codec.HttpResponse;
 import org.springframework.feign.invoke.method.FeignMethodMetadata;
 import org.springframework.feign.invoke.template.FeignRequestTemplate;
-import org.springframework.feign.invoke.template.FeignTemplateFactory;
+import org.springframework.feign.invoke.template.FeignRequestFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StreamUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
@@ -49,7 +51,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
     private final Client client;
     private final org.springframework.feign.retryer.Retryer retryer;
     private final List<RequestInterceptor> requestInterceptors;
-    private final FeignTemplateFactory buildTemplateFromArgs;
+    private final FeignRequestFactory buildTemplateFromArgs;
     private Request.Options options;
     private final FeignDecoder decoder;
 
@@ -59,7 +61,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
                             org.springframework.feign.retryer.Retryer retryer,
                             List<RequestInterceptor> requestInterceptors,
                             FeignMethodMetadata metadata,
-                            FeignTemplateFactory buildTemplateFromArgs,
+                            FeignRequestFactory buildTemplateFromArgs,
                             Request.Options options,
                             FeignDecoder decoder,
                             org.slf4j.Logger logger,
@@ -89,7 +91,6 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         }
     }
 
-    // TODO 下载
     Object executeAndDecode(FeignRequestTemplate template) throws Throwable {
         Type returnType = metadata.returnType();
         Type httpType = getParamTypeOf(returnType, HttpResponse.class);
@@ -163,6 +164,18 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
             headers.put(entry.getKey(), entry.getValue().stream().toList());
         }
 
+        // InputStream交给调用者处理
+        if(paramType.equals(InputStream.class)){
+            if(status == 200){
+                logger.info(">< {} {}ms {}", status, cost, url);
+            }else{
+                logger.warn(">< {} {}ms {}", status, cost, url);
+            }
+            Response.Body body = response.body();
+            InputStream inputStream = body != null ? body.asInputStream() : null;
+            return new HttpResponse<>(response.status(), headers, inputStream);
+        }
+
         // 获取响应主体
         String body = null;
         if (response.body() != null) {
@@ -171,7 +184,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
 
         if(status == 200){
             logger.info(">< {} {}ms {}", status, cost, url);
-            if(body == null || paramType.equals(String.class)){
+            if(!StringUtils.hasText(body) || paramType.equals(String.class)){
                 return new HttpResponse<>(response.status(), headers, body);
             }else{
                 return new HttpResponse<>(response.status(), headers, readType(body, paramType));

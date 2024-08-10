@@ -19,7 +19,7 @@
 
 #### 1. 指定服务url
 
-> Header需要自己声明，默认没有设置，比如一般的Post请求需要设置：Content-Type=application/json
+> 对于Post的Body请求，默认会设置：Content-Type=application/json，如果手动设置了则以设置的为准
 
 ```java
 @FeignClient(url = "${feign.service-user.url}")
@@ -110,5 +110,25 @@ public interface NmsService {
     @Options(connectTimeoutMillis = 1000, readTimeoutMillis = 1000)
     @RequestLine("GET /api/nms/svn_rcst/rcst_authentication?ids={ids}")
     HttpResponse<NmsNetworkInfoDTO> list(@Host String url, @Param("ids") List<Integer> ids);
+}
+```
+
+#### 5. 下载上传支持
+
+> 下载支持比较简单，只需使用HttpResponse<InputStream>接收就行，不过注意要自己关闭Stream；
+
+> 对于上传只做了有限的支持，固定设置：Content-Type=multipart/form-data; 
+> 使用@MultipartForm来标记表单数据，仅支持类型：Map<String, ?>
+> 使用@MultipartFile来标记文件，仅支持类型：InputStream、File、MultipartFile、byte[]
+
+```java
+@FeignClient(url = "http://localhost:8080")
+public interface FeignService {
+    
+    @RequestLine("GET /demo/api/download")
+    HttpResponse<InputStream> download();
+
+    @RequestLine("POST /demo/api/upload")
+    HttpResponse<Void> upload(@MultipartForm Map<String, String> map, @MultipartFile(fileName = "xx.sql") InputStream inputStream);
 }
 ```
