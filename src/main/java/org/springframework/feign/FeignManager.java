@@ -128,6 +128,7 @@ public class FeignManager {
 
         try{
             builder.encoder(encoder(feign)).decoder(decoder(feign));
+            // Https设置
             Class<?> sslSocketFactoryClass = feign.sslSocketFactory();
             Class<?> hostnameVerifierClass = feign.hostnameVerifier();
             if (SSLSocketFactory.class.isAssignableFrom(sslSocketFactoryClass)) {
