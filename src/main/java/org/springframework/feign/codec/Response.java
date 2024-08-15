@@ -118,20 +118,16 @@ public class Response<T> {
 	 * http=200, code=200, msg="success", data=#{page}
 	 */
 	public static <E> Response<Page<E>> page(List<E> list){
-    	Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMsg(), null);
-    	if(list == null){
-        	list = new ArrayList<>();
-        }
-		response.setData(new Page<>(list, list.size()));
-    	return response;
-    }
-
-	/**
-	 * http=200, code=200, msg="success", data=#{page}
-	 */
-	public static <E> Response<Page<E>> page(com.github.pagehelper.Page<E> page){
 		Response<Page<E>> response = new Response<>(HttpStatus.OK.value(), ResponseCode.SUCCESS.getCode(), ResponseCode.SUCCESS.getMsg(), null);
-		response.setData(new Page<>(page, page.getTotal()));
+		if(list == null){
+			list = new ArrayList<>();
+		}
+
+		if(list instanceof com.github.pagehelper.Page<E> page){
+			response.setData(new Page<>(page, page.getTotal()));
+		}else {
+			response.setData(new Page<>(list, list.size()));
+		}
 		return response;
 	}
 
