@@ -113,9 +113,8 @@ public class FeignManager {
                 .invocationHandlerFactory(new FeignInvocationHandlerFactory());
 
         String[] interceptors = applicationContext.getBeanNamesForType(RequestInterceptor.class);
-        if(interceptors.length > 0) {
-            String interceptor = interceptors[0];
-            RequestInterceptor requestInterceptor = applicationContext.getBean(interceptor, RequestInterceptor.class);
+        for (String interceptorName : interceptors) {
+            RequestInterceptor requestInterceptor = applicationContext.getBean(interceptorName, RequestInterceptor.class);
             builder.requestInterceptor(requestInterceptor);
         }
 
