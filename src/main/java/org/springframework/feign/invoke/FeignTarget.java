@@ -71,8 +71,8 @@ public class FeignTarget<T> implements Target<T> {
         String parsed = prasedName + prasedUrl;
         if (request.url().indexOf("http") != 0) {
             if(parsed.indexOf("http") != 0){
-                log.error(">< Remote failed due to illegal url, name={}, url={}", name, url);
-                throw new RemoteException(url, "illegal url[name=" + name + ", url=" + url + "]");
+                log.error(">< Remote failed due to illegal url, {}", parsed);
+                throw new RemoteException(url, "illegal url, " + parsed);
             }
             request.insert(0, parsed);
         }
