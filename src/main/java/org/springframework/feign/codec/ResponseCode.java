@@ -16,55 +16,62 @@ public enum ResponseCode implements HttpCode {
     /**
      * 200
      */
-    SUCCESS("200", "Success"),
+    SUCCESS(200, "200", "Success"),
 
     /**
      * 202
      */
-    ACCEPTED("202", "Accepted"),
+    ACCEPTED(202, "202", "Accepted"),
 
     /**
      * 400
      */
-    BAD_REQUEST("400", "Bad Request"),
+    BAD_REQUEST(400, "400", "Bad Request"),
 
     /**
      * 401
      */
-    UNAUTHORIZED("401", "Unauthorized"),
+    UNAUTHORIZED(401, "401", "Unauthorized"),
 
     /**
      * 403
      */
-    FORBIDDEN("403", "Forbidden"),
+    FORBIDDEN(403, "403", "Forbidden"),
 
     /**
      * 429
      */
-    TOO_MANY_REQUESTS("429", "Too Many Requests"),
+    TOO_MANY_REQUESTS(429, "429", "Too Many Requests"),
 
     /**
      * 498
      */
-    TOKEN_INVALID_OR_EXPIRED("498", "Token changed or expired"),
+    TOKEN_INVALID_OR_EXPIRED(498, "498", "Token changed or expired"),
 
     /**
      * 500
      */
-    INTERNAL_SERVER_ERROR("500", "Internal Server Error"),
+    INTERNAL_SERVER_ERROR(500, "500", "Internal Server Error"),
 
     /**
      * 597
      */
-    SYS_ERROR("597", "System Error");
+    SYS_ERROR(597, "597", "System Error");
+
+    private final Integer status;
 
     private final String code;
 
     private final String msg;
 
-    ResponseCode(String code, String msg) {
+    ResponseCode(Integer status, String code, String msg) {
+        this.status = status;
         this.code = code;
         this.msg = msg;
+    }
+
+    public Integer getStatus(){
+        return status;
     }
 
     public String getCode() {
