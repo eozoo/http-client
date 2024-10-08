@@ -94,7 +94,7 @@ public class HttpResponse<T> extends ResponseEntity<T> {
      * status=#{HttpCode.status}, body=#{HttpCode.msg}
      */
     public static HttpResponse<Object> code(HttpCode httpCode) {
-        return new HttpResponse<>(httpCode, null, null);
+        return new HttpResponse<>(httpCode, null, httpCode.getMsg());
     }
 
     /**
