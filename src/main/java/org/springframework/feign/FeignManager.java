@@ -88,7 +88,7 @@ public class FeignManager {
 
         Logger logger = LoggerFactory.getLogger(feign.logger());
         T created = builder(feign).target(clazz, url, null, applicationContext, valueResolver, logger);
-        T previous = (T) localFeigns.put(key, created);
+        T previous = (T) localFeigns.putIfAbsent(key, created);
         if (previous != null) {
             return previous;
         } else {

@@ -17,7 +17,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Documented
 @Import(FeignBeanDefinitionRegistrar.class)
-public @interface FeignScan {
+public @interface EnableFeign {
 
-	String[] basePackages() default{};
 }
