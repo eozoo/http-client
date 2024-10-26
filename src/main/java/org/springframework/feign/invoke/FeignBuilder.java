@@ -75,21 +75,19 @@ public class FeignBuilder {
     }
 
     public <T> T target(Class<T> apiType, String url, String name,
-                        ApplicationContext applicationContext, StringValueResolver valueResolver, org.slf4j.Logger logger) {
-        return target(new FeignTarget<>(apiType, name, url, applicationContext, valueResolver), logger);
+                        ApplicationContext applicationContext, StringValueResolver valueResolver, boolean logInfo) {
+        return target(new FeignTarget<>(apiType, name, url, applicationContext, valueResolver), logInfo);
     }
 
-    public <T> T target(Target<T> target, org.slf4j.Logger logger) {
-        return build(logger).newInstance(target);
+    public <T> T target(Target<T> target, boolean logInfo) {
+        return build(logInfo).newInstance(target);
     }
 
-    public Feign build(org.slf4j.Logger logger) {
+    public Feign build(boolean logInfo) {
         FeignMethodHandlerFactory methodHandlerFactory =
                 new FeignMethodHandlerFactory(client, retryer, requestInterceptors, exceptionHandler);
-
         FeignParseHandlersByName parseHandlersByName =
-                new FeignParseHandlersByName(contract, options, encoder, decoder, methodHandlerFactory, logger);
-
+                new FeignParseHandlersByName(contract, options, encoder, decoder, methodHandlerFactory, logInfo);
         return new FeignImplement(parseHandlersByName, invocationHandlerFactory);
     }
 }

@@ -1,6 +1,5 @@
 package org.springframework.feign;
 
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.context.ApplicationContext;
@@ -52,10 +51,8 @@ public class FeignFactory<T> implements FactoryBean<T>, EmbeddedValueResolverAwa
     public T getObject() {
         FeignClient feign = AnnotationUtils.getAnnotation(feignClass, FeignClient.class);
         assert feign != null;
-        org.slf4j.Logger logger = LoggerFactory.getLogger(feign.logger());
-
         FeignBuilder builder = FeignManager.builder(feign);
-        return builder.target(feignClass, feign.url(), feign.name(), applicationContext, valueResolver, logger);
+        return builder.target(feignClass, feign.url(), feign.name(), applicationContext, valueResolver, feign.logInfo());
     }
 
     @Override

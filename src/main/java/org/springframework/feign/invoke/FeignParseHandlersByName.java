@@ -30,16 +30,16 @@ public class FeignParseHandlersByName {
     private final Encoder encoder;
     private final FeignDecoder decoder;
     private final FeignMethodHandlerFactory factory;
-    private final org.slf4j.Logger logger;
+    private boolean logInfo = true;
 
     FeignParseHandlersByName(FeignContract contract, Request.Options options, Encoder encoder, FeignDecoder decoder,
-                        FeignMethodHandlerFactory factory, org.slf4j.Logger logger) {
+                        FeignMethodHandlerFactory factory, boolean logInfo) {
         this.contract = contract;
         this.options = options;
         this.factory = factory;
         this.encoder = checkNotNull(encoder, "encoder");
         this.decoder = checkNotNull(decoder, "decoder");
-        this.logger = checkNotNull(logger, "logger");
+        this.logInfo = logInfo;
     }
 
     public Map<String, InvocationHandlerFactory.MethodHandler> apply(Target<?> key) {
@@ -59,7 +59,7 @@ public class FeignParseHandlersByName {
             } else {
                 feignRequestFactory = new FeignRequestFactory(meta);
             }
-            result.put(meta.configKey(), factory.create(key, meta, feignRequestFactory, options, decoder, logger));
+            result.put(meta.configKey(), factory.create(key, meta, feignRequestFactory, options, decoder, logInfo));
         }
         return result;
     }

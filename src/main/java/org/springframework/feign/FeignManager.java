@@ -18,8 +18,6 @@ import feign.Request;
 import feign.RequestInterceptor;
 import feign.codec.Encoder;
 import feign.jackson.JacksonEncoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.feign.annotation.FeignClient;
@@ -61,18 +59,14 @@ public class FeignManager {
     public static <T> T get(Class<T> clazz, String url, int connectTimeoutMillis, int readTimeoutMillis) {
         FeignClient feign = AnnotationUtils.getAnnotation(clazz, FeignClient.class);
         Assert.notNull(feign, clazz + " is not a FeignClient");
-
-        Logger logger = LoggerFactory.getLogger(feign.logger());
         return builder(feign, new Request.Options(connectTimeoutMillis, readTimeoutMillis))
-                .target(clazz, url, null, applicationContext, valueResolver, logger);
+                .target(clazz, url, null, applicationContext, valueResolver, feign.logInfo());
     }
 
     public static <T> T get(Class<T> clazz, String url) {
         FeignClient feign = AnnotationUtils.getAnnotation(clazz, FeignClient.class);
         Assert.notNull(feign, clazz + " is not a FeignClient");
-
-        Logger logger = LoggerFactory.getLogger(feign.logger());
-        return builder(feign).target(clazz, url, null, applicationContext, valueResolver, logger);
+        return builder(feign).target(clazz, url, null, applicationContext, valueResolver, feign.logInfo());
     }
 
     @SuppressWarnings("unchecked")
@@ -85,15 +79,8 @@ public class FeignManager {
         if (exist != null) {
             return exist;
         }
-
-        Logger logger = LoggerFactory.getLogger(feign.logger());
-        T created = builder(feign).target(clazz, url, null, applicationContext, valueResolver, logger);
-        T previous = (T) localFeigns.putIfAbsent(key, created);
-        if (previous != null) {
-            return previous;
-        } else {
-            return created;
-        }
+        return (T) localFeigns.computeIfAbsent(key,
+                k -> builder(feign).target(clazz, url, null, applicationContext, valueResolver, feign.logInfo()));
     }
 
     static FeignBuilder builder(FeignClient feign) {

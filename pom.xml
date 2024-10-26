@@ -9,7 +9,7 @@
 
     <name>spring-feign</name>
     <description>A simple http client, based on netflix feign</description>
-    <url>https://github.com/cowave5/spring-feign.git</url>
+    <url>https://github.com/cowave5/spring-feign</url>
 
     <licenses>
         <license>
@@ -25,15 +25,15 @@
     </issueManagement>
 
     <scm>
-        <url>https://github.com/cowave5/spring-feign</url>
-        <connection>scm:git:https://github.com/cowave5/spring-feign.git</connection>
-        <developerConnection>scm:git:https://github.com/cowave5/spring-feign.git</developerConnection>
+        <url>git@github.com:cowave5/spring-feign.git</url>
+        <connection>scm:git@github.com:cowave5/spring-feign.git</connection>
+        <developerConnection>scm:git@github.com:cowave5/spring-feign.git</developerConnection>
     </scm>
 
     <developers>
         <developer>
-            <name>shanhm1991</name>
-            <email>shanhm1991@163.com</email>
+            <name>shanhuiming</name>
+            <email>huiming.shan@cowave.com</email>
         </developer>
     </developers>
 

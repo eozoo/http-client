@@ -1,6 +1,5 @@
 package org.springframework.feign.annotation;
 
-import feign.Feign;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.feign.NULL;
 import org.springframework.feign.codec.EJacksonDecoder;
@@ -35,7 +34,7 @@ public @interface FeignClient {
 
 	Class<?> decoder() default EJacksonDecoder.class;
 
-	Class<?> logger() default Feign.class;
+	boolean logInfo() default true;
 
 	Class<?> sslSocketFactory() default NULL.class;
 
@@ -53,15 +52,21 @@ public @interface FeignClient {
 
 	String readTimeoutMillisStr() default "";
 
+	@Deprecated
 	int maxAttempts() default 1;
 
+	@Deprecated
 	String maxAttemptsStr() default "";
 
+	@Deprecated
 	long period() default 1000;
 
+	@Deprecated
 	String periodStr() default "";
 
+	@Deprecated
 	long maxPeriod() default 1000;
 
+	@Deprecated
 	String maxPeriodStr() default "";
 }

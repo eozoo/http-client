@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import feign.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.feign.FeignExceptionHandler;
 import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.codec.HttpResponse;
@@ -32,8 +34,8 @@ import static java.lang.String.format;
  * @author shanhuiming
  */
 public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeignSyncInvoker.class);
     private static final long MAX_RESPONSE_BUFFER_SIZE = 8192L;
-
     private static final ObjectMapper RESPONSE_MAPEER = new ObjectMapper();
 
     static{
@@ -44,8 +46,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
                 .registerModules(Collections.emptyList());
         RESPONSE_MAPEER.setTimeZone(TimeZone.getDefault());
     }
-
-    private final org.slf4j.Logger logger;
+    private final boolean logInfo;
     private final FeignMethodMetadata metadata;
     private final Target<?> target;
     private final Client client;
@@ -54,7 +55,6 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
     private final FeignRequestFactory buildTemplateFromArgs;
     private Request.Options options;
     private final FeignDecoder decoder;
-
     private final FeignExceptionHandler exceptionHandler;
 
     public FeignSyncInvoker(Target<?> target, Client client,
@@ -64,7 +64,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
                             FeignRequestFactory buildTemplateFromArgs,
                             Request.Options options,
                             FeignDecoder decoder,
-                            org.slf4j.Logger logger,
+                            boolean logInfo,
                             FeignExceptionHandler exceptionHandler) {
         this.target = checkNotNull(target, "target");
         this.client = checkNotNull(client, "client for %s", target);
@@ -74,7 +74,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         this.buildTemplateFromArgs = checkNotNull(buildTemplateFromArgs, "metadata for %s", target);
         this.options = checkNotNull(options, "options for %s", target);
         this.decoder = checkNotNull(decoder, "decoder for %s", target);
-        this.logger = checkNotNull(logger, "decoder for %s", target);
+        this.logInfo = logInfo;
         this.exceptionHandler = exceptionHandler;
     }
 
@@ -104,14 +104,13 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
             response = client.execute(request, options);
         } catch (IOException e){
             long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
-            logger.error(">< {}ms {} {}", cost, e.getMessage(), url);
+            LOGGER.error(">< {}ms {} {}", cost, e.getMessage(), url);
             throw new RemoteException(url, format("%sms %s %s", cost, e.getMessage(), url));
         }
 
         long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
         int status = response.status();
         try {
-
             // 1.响应类型: feign.Response
             if (Response.class.equals(returnType)) {
                 return parseFeignResponse(response, status, url, cost);
@@ -130,15 +129,15 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
 
             // 4.decoder解码
             if (status == 200) {
-                return decoder.decode(response, metadata.returnType(), url, cost, status, logger);
+                return decoder.decode(response, metadata.returnType(), url, cost, status, logInfo);
             }
 
             String body = null;
             if (response.body() != null) {
                 body = StreamUtils.copyToString(response.body().asInputStream(), StandardCharsets.UTF_8);
-                logger.error(">< {} {}ms {} {}", status, cost, url, body);
+                LOGGER.error(">< {} {}ms {} {}", status, cost, url, body);
             }else{
-                logger.error(">< {} {}ms {}", status, cost, url);
+                LOGGER.error(">< {} {}ms {}", status, cost, url);
             }
             throw new RemoteException(url, status, null, body);
         } catch(RemoteException e) {
@@ -147,7 +146,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
             }
             throw e;
         } catch (IOException e) {
-            logger.error(">< {}ms {} {}", cost, e.getMessage(), url);
+            LOGGER.error(">< {}ms {} {}", cost, e.getMessage(), url);
             throw new RemoteException(url, format("%sms %s %s", cost, e.getMessage(), url));
         }
     }
@@ -162,9 +161,11 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         // InputStream交给调用者处理
         if(paramType.equals(InputStream.class)){
             if(status == 200){
-                logger.info(">< {} {}ms {}", status, cost, url);
+                if(logInfo){
+                    LOGGER.info(">< {} {}ms {}", status, cost, url);
+                }
             }else{
-                logger.warn(">< {} {}ms {}", status, cost, url);
+                LOGGER.warn(">< {} {}ms {}", status, cost, url);
             }
             Response.Body body = response.body();
             InputStream inputStream = body != null ? body.asInputStream() : null;
@@ -178,19 +179,21 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         }
 
         if(status == 200){
-            logger.info(">< {} {}ms {}", status, cost, url);
+            if(logInfo){
+                LOGGER.info(">< {} {}ms {}", status, cost, url);
+            }
             if(!StringUtils.hasText(body) || paramType.equals(String.class)){
                 return new HttpResponse<>(response.status(), headers, body);
             }else{
                 return new HttpResponse<>(response.status(), headers, readType(body, paramType));
             }
         }else if(status > 200 && status < 300){
-            logger.warn(">< {} {}ms {} {}", status, cost, url, body);
+            LOGGER.warn(">< {} {}ms {} {}", status, cost, url, body);
             HttpResponse<?> httpResponse = new HttpResponse<>(response.status(), headers, null);
             httpResponse.setMessage(body);
             return httpResponse;
         }else{
-            logger.error(">< {} {}ms {} {}", status, cost, url, body);
+            LOGGER.error(">< {} {}ms {} {}", status, cost, url, body);
             HttpResponse<?> httpResponse = new HttpResponse<>(response.status(), headers, null);
             httpResponse.setMessage(body);
             return httpResponse;
@@ -211,16 +214,18 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         }
 
         if(status >= 200 && status < 300){
-            logger.info(">< {} {}ms {}", status, cost, url);
+            if(logInfo){
+                LOGGER.info(">< {} {}ms {}", status, cost, url);
+            }
             if(body == null || paramType.equals(String.class)){
                 return new ResponseEntity<>(body, headers, response.status());
             }else{
                 return new ResponseEntity<>(readType(body, paramType), headers, response.status());
             }
         }else if(body == null){
-            logger.error(">< {} {}ms {}", status, cost, url);
+            LOGGER.error(">< {} {}ms {}", status, cost, url);
         }else{
-            logger.error(">< {} {}ms {} {}", status, cost, url, body);
+            LOGGER.error(">< {} {}ms {} {}", status, cost, url, body);
         }
         return new ResponseEntity<>(body, headers, response.status());
     }
@@ -258,11 +263,13 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
 
     private void logging(int status, long cost, String url, String body){
         if(status >= 200 && status < 300){
-            logger.info(">< {} {}ms {}", status, cost, url);
+            if(logInfo){
+                LOGGER.info(">< {} {}ms {}", status, cost, url);
+            }
         }else if(body == null){
-            logger.error(">< {} {}ms {}", status, cost, url);
+            LOGGER.error(">< {} {}ms {}", status, cost, url);
         }else{
-            logger.error(">< {} {}ms {} {}", status, cost, url, body);
+            LOGGER.error(">< {} {}ms {} {}", status, cost, url, body);
         }
     }
 
