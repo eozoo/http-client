@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.event.Level;
 import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.invoke.method.FeignContract;
 import org.springframework.feign.invoke.method.FeignMethodMetadata;
@@ -30,16 +31,16 @@ public class FeignParseHandlersByName {
     private final Encoder encoder;
     private final FeignDecoder decoder;
     private final FeignMethodHandlerFactory factory;
-    private boolean logInfo = true;
+    private Level level;
 
     FeignParseHandlersByName(FeignContract contract, Request.Options options, Encoder encoder, FeignDecoder decoder,
-                        FeignMethodHandlerFactory factory, boolean logInfo) {
+                        FeignMethodHandlerFactory factory, Level level) {
         this.contract = contract;
         this.options = options;
         this.factory = factory;
         this.encoder = checkNotNull(encoder, "encoder");
         this.decoder = checkNotNull(decoder, "decoder");
-        this.logInfo = logInfo;
+        this.level = level;
     }
 
     public Map<String, InvocationHandlerFactory.MethodHandler> apply(Target<?> key) {
@@ -59,7 +60,7 @@ public class FeignParseHandlersByName {
             } else {
                 feignRequestFactory = new FeignRequestFactory(meta);
             }
-            result.put(meta.configKey(), factory.create(key, meta, feignRequestFactory, options, decoder, logInfo));
+            result.put(meta.configKey(), factory.create(key, meta, feignRequestFactory, options, decoder, level));
         }
         return result;
     }

@@ -1,5 +1,6 @@
 package org.springframework.feign.annotation;
 
+import org.slf4j.event.Level;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.feign.NULL;
 import org.springframework.feign.codec.EJacksonDecoder;
@@ -28,13 +29,13 @@ public @interface FeignClient {
 	@AliasFor(attribute = "value")
 	String url() default "";
 
+	Level level() default Level.WARN;
+
 	String name() default "";
 
 	Class<?> encoder() default EJacksonEncoder.class;
 
 	Class<?> decoder() default EJacksonDecoder.class;
-
-	boolean logInfo() default true;
 
 	Class<?> sslSocketFactory() default NULL.class;
 

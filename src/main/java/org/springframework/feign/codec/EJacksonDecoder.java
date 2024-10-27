@@ -6,12 +6,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 import java.io.BufferedReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Objects;
+
+import static org.slf4j.event.Level.WARN;
 
 /**
  *
@@ -36,7 +39,7 @@ public class EJacksonDecoder implements FeignDecoder {
     }
 
     @Override
-    public Object decode(Response response, Type type, String url, long cost, int status, boolean logInfo) throws Exception {
+    public Object decode(Response response, Type type, String url, long cost, int status, Level level) throws Exception {
         Reader reader = response.body().asReader();
         if (!reader.markSupported()) {
             reader = new BufferedReader(reader, 1);
@@ -49,7 +52,7 @@ public class EJacksonDecoder implements FeignDecoder {
         reader.reset();
 
         if (void.class == type) {
-            if(logInfo){
+            if(LOGGER.isDebugEnabled() || level.toInt() < WARN.toInt()){
                 LOGGER.info(">< {} {}ms {}", status, cost, url);
             }
             return null;
@@ -61,13 +64,13 @@ public class EJacksonDecoder implements FeignDecoder {
                 org.springframework.feign.codec.Response resp = (org.springframework.feign.codec.Response)obj;
                 if(!Objects.equals(ResponseCode.SUCCESS.getCode(), resp.getCode())){
                     LOGGER.error(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
-                }else if(logInfo){
+                }else if(LOGGER.isDebugEnabled() || level.toInt() < WARN.toInt()){
                     LOGGER.info(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
                 }
-            }else if(logInfo){
+            }else if(LOGGER.isDebugEnabled() || level.toInt() < WARN.toInt()){
                 LOGGER.info(">< {} {}ms {}", status, cost, url);
             }
-        }else if(logInfo){
+        }else if(LOGGER.isDebugEnabled() || level.toInt() < WARN.toInt()){
             LOGGER.info(">< {} {}ms {}", status, cost, url);
         }
         return obj;

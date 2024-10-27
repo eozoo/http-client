@@ -2,6 +2,7 @@ package org.springframework.feign.invoke;
 
 import feign.*;
 import feign.codec.Encoder;
+import org.slf4j.event.Level;
 import org.springframework.context.ApplicationContext;
 import org.springframework.feign.FeignExceptionHandler;
 import org.springframework.feign.codec.FeignDecoder;
@@ -75,19 +76,19 @@ public class FeignBuilder {
     }
 
     public <T> T target(Class<T> apiType, String url, String name,
-                        ApplicationContext applicationContext, StringValueResolver valueResolver, boolean logInfo) {
-        return target(new FeignTarget<>(apiType, name, url, applicationContext, valueResolver), logInfo);
+                        ApplicationContext applicationContext, StringValueResolver valueResolver, Level level) {
+        return target(new FeignTarget<>(apiType, name, url, applicationContext, valueResolver), level);
     }
 
-    public <T> T target(Target<T> target, boolean logInfo) {
-        return build(logInfo).newInstance(target);
+    public <T> T target(Target<T> target, Level level) {
+        return build(level).newInstance(target);
     }
 
-    public Feign build(boolean logInfo) {
+    public Feign build(Level level) {
         FeignMethodHandlerFactory methodHandlerFactory =
                 new FeignMethodHandlerFactory(client, retryer, requestInterceptors, exceptionHandler);
         FeignParseHandlersByName parseHandlersByName =
-                new FeignParseHandlersByName(contract, options, encoder, decoder, methodHandlerFactory, logInfo);
+                new FeignParseHandlersByName(contract, options, encoder, decoder, methodHandlerFactory, level);
         return new FeignImplement(parseHandlersByName, invocationHandlerFactory);
     }
 }

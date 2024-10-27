@@ -1,6 +1,7 @@
 package org.springframework.feign.invoke;
 
 import feign.*;
+import org.slf4j.event.Level;
 import org.springframework.feign.FeignExceptionHandler;
 import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.invoke.method.FeignMethodMetadata;
@@ -31,8 +32,8 @@ public class FeignMethodHandlerFactory {
     }
 
     public InvocationHandlerFactory.MethodHandler create(Target<?> target, FeignMethodMetadata md,
-                                                         FeignRequestFactory buildTemplateFromArgs, Request.Options options, FeignDecoder decoder, boolean logInfo) {
+                                                         FeignRequestFactory buildTemplateFromArgs, Request.Options options, FeignDecoder decoder, Level level) {
         return new FeignSyncInvoker(target,
-                client, retryer, requestInterceptors, md, buildTemplateFromArgs, options, decoder, logInfo, exceptionHandler);
+                client, retryer, requestInterceptors, md, buildTemplateFromArgs, options, decoder, level, exceptionHandler);
     }
 }

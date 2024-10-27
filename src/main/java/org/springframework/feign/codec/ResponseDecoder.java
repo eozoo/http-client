@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.Module;
 import feign.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.springframework.feign.invoke.RemoteAssertsException;
 
 import java.io.BufferedReader;
@@ -12,6 +13,8 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Objects;
+
+import static org.slf4j.event.Level.WARN;
 
 /**
  *
@@ -36,9 +39,9 @@ public class ResponseDecoder implements FeignDecoder {
     }
 
     @Override
-    public Object decode(Response response, Type type, String url, long cost, int status, boolean logInfo) throws Exception {
+    public Object decode(Response response, Type type, String url, long cost, int status, Level level) throws Exception {
         if (response.body() == null) {
-            if(logInfo){
+            if(LOGGER.isDebugEnabled() || level.toInt() < WARN.toInt()){
                 LOGGER.info(">< {} {}ms {}", status, cost, url);
             }
             return null;
@@ -53,7 +56,7 @@ public class ResponseDecoder implements FeignDecoder {
         reader.mark(1);
         // Eagerly returning null avoids "No content to map due to end-of-input"
         if (reader.read() == -1) {
-            if(logInfo){
+            if(LOGGER.isDebugEnabled() || level.toInt() < WARN.toInt()){
                 LOGGER.info(">< {} {}ms {}", status, cost, url);
             }
             return null;
@@ -68,13 +71,13 @@ public class ResponseDecoder implements FeignDecoder {
         }
 
         if (void.class == type) {
-            if(logInfo){
+            if(LOGGER.isDebugEnabled() || level.toInt() < WARN.toInt()){
                 LOGGER.info(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
             }
             return null;
         }
 
-        if(logInfo){
+        if(LOGGER.isDebugEnabled() || level.toInt() < WARN.toInt()){
             LOGGER.info(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
         }
         String data = mapper.writeValueAsString(resp.getData());

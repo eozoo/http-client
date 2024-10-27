@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import feign.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.springframework.feign.FeignExceptionHandler;
 import org.springframework.feign.codec.FeignDecoder;
 import org.springframework.feign.codec.HttpResponse;
@@ -29,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import static feign.Util.checkNotNull;
 import static java.lang.String.format;
+import static org.slf4j.event.Level.WARN;
 
 /**
  * @author shanhuiming
@@ -46,7 +48,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
                 .registerModules(Collections.emptyList());
         RESPONSE_MAPEER.setTimeZone(TimeZone.getDefault());
     }
-    private final boolean logInfo;
+    private final Level level;
     private final FeignMethodMetadata metadata;
     private final Target<?> target;
     private final Client client;
@@ -64,7 +66,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
                             FeignRequestFactory buildTemplateFromArgs,
                             Request.Options options,
                             FeignDecoder decoder,
-                            boolean logInfo,
+                            Level level,
                             FeignExceptionHandler exceptionHandler) {
         this.target = checkNotNull(target, "target");
         this.client = checkNotNull(client, "client for %s", target);
@@ -74,7 +76,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         this.buildTemplateFromArgs = checkNotNull(buildTemplateFromArgs, "metadata for %s", target);
         this.options = checkNotNull(options, "options for %s", target);
         this.decoder = checkNotNull(decoder, "decoder for %s", target);
-        this.logInfo = logInfo;
+        this.level = level;
         this.exceptionHandler = exceptionHandler;
     }
 
@@ -129,7 +131,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
 
             // 4.decoder解码
             if (status == 200) {
-                return decoder.decode(response, metadata.returnType(), url, cost, status, logInfo);
+                return decoder.decode(response, metadata.returnType(), url, cost, status, level);
             }
 
             String body = null;
@@ -161,7 +163,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         // InputStream交给调用者处理
         if(paramType.equals(InputStream.class)){
             if(status == 200){
-                if(logInfo){
+                if(LOGGER.isDebugEnabled() || level.toInt() < WARN.toInt()){
                     LOGGER.info(">< {} {}ms {}", status, cost, url);
                 }
             }else{
@@ -179,7 +181,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         }
 
         if(status == 200){
-            if(logInfo){
+            if(LOGGER.isDebugEnabled() || level.toInt() < WARN.toInt()){
                 LOGGER.info(">< {} {}ms {}", status, cost, url);
             }
             if(!StringUtils.hasText(body) || paramType.equals(String.class)){
@@ -214,7 +216,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         }
 
         if(status >= 200 && status < 300){
-            if(logInfo){
+            if(LOGGER.isDebugEnabled() || level.toInt() < WARN.toInt()){
                 LOGGER.info(">< {} {}ms {}", status, cost, url);
             }
             if(body == null || paramType.equals(String.class)){
@@ -263,7 +265,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
 
     private void logging(int status, long cost, String url, String body){
         if(status >= 200 && status < 300){
-            if(logInfo){
+            if(LOGGER.isDebugEnabled() || level.toInt() < WARN.toInt()){
                 LOGGER.info(">< {} {}ms {}", status, cost, url);
             }
         }else if(body == null){
