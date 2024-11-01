@@ -1,6 +1,6 @@
 [![Build Status](https://github.com/cowave5/spring-feign/actions/workflows/maven.yml/badge.svg?branch=master)](https://github.com/cowave5/spring-feign/actions)
 ![Static Badge](https://img.shields.io/badge/Java-17-brightgreen)
-![Maven central](https://img.shields.io/badge/maven--central-2.7.2-brightgreen)
+![Maven central](https://img.shields.io/badge/maven--central-2.7.4-brightgreen)
 [![License](https://img.shields.io/badge/license-Apache--2.0-brightgreen)](http://www.apache.org/licenses/LICENSE-2.0.txt)
 
 ## spring-feign
@@ -13,7 +13,7 @@
 <dependency>
     <groupId>com.cowave.commons</groupId>
     <artifactId>spring-feign</artifactId>
-    <version>2.7.2</version>
+    <version>2.7.4</version>
 </dependency>
 ```
 
