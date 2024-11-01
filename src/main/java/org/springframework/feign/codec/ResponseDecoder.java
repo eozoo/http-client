@@ -1,12 +1,12 @@
 package org.springframework.feign.codec;
 
+import com.cowave.commons.response.exception.HttpHintException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.Module;
 import feign.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
-import org.springframework.feign.invoke.RemoteAssertsException;
 
 import java.io.BufferedReader;
 import java.io.Reader;
@@ -14,6 +14,7 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Objects;
 
+import static com.cowave.commons.response.HttpResponseCode.SUCCESS;
 import static org.slf4j.event.Level.WARN;
 
 /**
@@ -63,11 +64,10 @@ public class ResponseDecoder implements FeignDecoder {
         }
         reader.reset();
 
-        org.springframework.feign.codec.Response<?> resp =
-                mapper.readValue(reader, org.springframework.feign.codec.Response.class);
-        if(!Objects.equals(ResponseCode.SUCCESS.getCode(), resp.getCode())){
+        com.cowave.commons.response.Response<?> resp = mapper.readValue(reader, com.cowave.commons.response.Response.class);
+        if(!Objects.equals(SUCCESS.getCode(), resp.getCode())){
             LOGGER.error(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
-            throw new RemoteAssertsException(url, status, resp.getCode(), resp.getMsg());
+            throw new HttpHintException(status, resp.getCode(), resp.getMsg());
         }
 
         if (void.class == type) {

@@ -7,7 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
-import java.util.Collection;
 import java.util.Map;
 
 import static feign.Util.checkArgument;

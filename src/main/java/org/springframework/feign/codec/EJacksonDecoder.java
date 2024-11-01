@@ -14,6 +14,7 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Objects;
 
+import static com.cowave.commons.response.HttpResponseCode.SUCCESS;
 import static org.slf4j.event.Level.WARN;
 
 /**
@@ -60,9 +61,9 @@ public class EJacksonDecoder implements FeignDecoder {
 
         Object obj = mapper.readValue(reader, mapper.constructType(type));
         if(obj != null){
-            if(org.springframework.feign.codec.Response.class.isAssignableFrom(obj.getClass())){
-                org.springframework.feign.codec.Response resp = (org.springframework.feign.codec.Response)obj;
-                if(!Objects.equals(ResponseCode.SUCCESS.getCode(), resp.getCode())){
+            if(com.cowave.commons.response.Response.class.isAssignableFrom(obj.getClass())){
+                com.cowave.commons.response.Response resp = (com.cowave.commons.response.Response)obj;
+                if(!Objects.equals(SUCCESS.getCode(), resp.getCode())){
                     LOGGER.error(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
                 }else if(LOGGER.isDebugEnabled() || level.toInt() < WARN.toInt()){
                     LOGGER.info(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());

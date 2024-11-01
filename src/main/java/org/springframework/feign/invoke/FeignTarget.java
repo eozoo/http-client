@@ -1,5 +1,6 @@
 package org.springframework.feign.invoke;
 
+import com.cowave.commons.response.exception.HttpHintException;
 import feign.Request;
 import feign.RequestTemplate;
 import feign.Target;
@@ -72,7 +73,7 @@ public class FeignTarget<T> implements Target<T> {
         if (request.url().indexOf("http") != 0) {
             if(parsed.indexOf("http") != 0){
                 log.error(">< Remote failed due to illegal url, {}", parsed);
-                throw new RemoteException(url, "illegal url, " + parsed);
+                throw new HttpHintException("{frame.remote.failed}");
             }
             request.insert(0, parsed);
         }

@@ -1,5 +1,8 @@
 package org.springframework.feign.invoke;
 
+import com.cowave.commons.response.HttpResponse;
+import com.cowave.commons.response.exception.HttpException;
+import com.cowave.commons.response.exception.HttpHintException;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -11,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 import org.springframework.feign.FeignExceptionHandler;
 import org.springframework.feign.codec.FeignDecoder;
-import org.springframework.feign.codec.HttpResponse;
 import org.springframework.feign.invoke.method.FeignMethodMetadata;
 import org.springframework.feign.invoke.template.FeignRequestTemplate;
 import org.springframework.feign.invoke.template.FeignRequestFactory;
@@ -28,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static com.cowave.commons.response.HttpResponseCode.SERVICE_ERROR;
 import static feign.Util.checkNotNull;
 import static java.lang.String.format;
 import static org.slf4j.event.Level.WARN;
@@ -107,7 +110,7 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
         } catch (IOException e){
             long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
             LOGGER.error(">< {}ms {} {}", cost, e.getMessage(), url);
-            throw new RemoteException(url, format("%sms %s %s", cost, e.getMessage(), url));
+            throw new HttpHintException("{frame.remote.failed}");
         }
 
         long cost = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
@@ -141,15 +144,15 @@ public class FeignSyncInvoker implements InvocationHandlerFactory.MethodHandler 
             }else{
                 LOGGER.error(">< {} {}ms {}", status, cost, url);
             }
-            throw new RemoteException(url, status, null, body);
-        } catch(RemoteException e) {
+            throw new HttpHintException(status, SERVICE_ERROR.getCode(), "{frame.remote.failed}");
+        } catch(HttpException e) {
             if(exceptionHandler != null){
                 exceptionHandler.handle(e);
             }
             throw e;
         } catch (IOException e) {
             LOGGER.error(">< {}ms {} {}", cost, e.getMessage(), url);
-            throw new RemoteException(url, format("%sms %s %s", cost, e.getMessage(), url));
+            throw new HttpHintException("{frame.remote.failed}");
         }
     }
 

@@ -1,6 +1,6 @@
 package org.springframework.feign;
 
-import org.springframework.feign.invoke.RemoteException;
+import com.cowave.commons.response.exception.HttpException;
 
 /**
  *
@@ -9,5 +9,5 @@ import org.springframework.feign.invoke.RemoteException;
  */
 public interface FeignExceptionHandler {
 
-    void handle(RemoteException e);
+    void handle(HttpException e);
 }
