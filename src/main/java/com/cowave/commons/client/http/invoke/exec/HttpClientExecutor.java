@@ -98,7 +98,7 @@ public class HttpClientExecutor implements HttpExecutor {
         context.setAttribute("retryInterval", request.getRetryInterval());
 
         httpRequest.setConfig(requestConfig);
-        HttpResponse httpResponse = httpClient.execute(httpRequest, context);
+        CloseableHttpResponse httpResponse = (CloseableHttpResponse) httpClient.execute(httpRequest, context);
 
         Map<String, List<String>> remoteHeaders = new HashMap<>();
         for (Header header : httpResponse.getAllHeaders()) {
@@ -111,7 +111,7 @@ public class HttpClientExecutor implements HttpExecutor {
         String reason = httpResponse.getStatusLine().getReasonPhrase();
         InputStream stream = httpResponse.getEntity() != null ? httpResponse.getEntity().getContent() : null;
         long length = httpResponse.getEntity() != null ? httpResponse.getEntity().getContentLength() : 0;
-        return new HttpResponseTemplate(status, remoteHeaders, reason, stream, (int) length);
+        return new HttpResponseTemplate(httpResponse, status, remoteHeaders, reason, stream, (int) length);
     }
 
     private HttpRequestBase buildRequest(HttpRequestTemplate request) throws IOException {

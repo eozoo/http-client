@@ -10,12 +10,12 @@ import javax.net.ssl.SSLSession;
  */
 public class NoopHostnameVerifier implements HostnameVerifier {
 
-	@Override
-	public boolean verify(final String s, final SSLSession sslSession) {
-		return true;
-	}
+    @Override
+    public boolean verify(final String s, final SSLSession sslSession) {
+        return true;
+    }
 
-	@Override
+    @Override
     public final String toString() {
         return "NO_OP";
     }

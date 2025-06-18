@@ -21,6 +21,10 @@ import java.io.UnsupportedEncodingException;
 @Setter
 public class HttpClientFactoryBean<T> implements FactoryBean<T>, EmbeddedValueResolverAware, ApplicationContextAware {
 
+    private ApplicationContext applicationContext;
+
+    private StringValueResolver valueResolver;
+
     private Class<T> targetClass;
 
     public HttpClientFactoryBean() {
@@ -28,23 +32,23 @@ public class HttpClientFactoryBean<T> implements FactoryBean<T>, EmbeddedValueRe
     }
 
     @Override
+    public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    @Override
+    public void setEmbeddedValueResolver(@NonNull StringValueResolver valueResolver) {
+        this.valueResolver = valueResolver;
+    }
+
+    @Override
     public T getObject() throws UnsupportedEncodingException {
         HttpClient httpClient = AnnotationUtils.getAnnotation(targetClass, HttpClient.class);
-        return HttpProxyFactory.newProxy(targetClass, httpClient);
+        return HttpProxyFactory.newProxy(targetClass, httpClient, applicationContext, valueResolver);
     }
 
     @Override
     public Class<?> getObjectType() {
         return targetClass;
-    }
-
-    @Override
-    public void setEmbeddedValueResolver(@NonNull StringValueResolver valueResolver) {
-        HttpProxyFactory.setStringValueResolver(valueResolver);
-    }
-
-    @Override
-    public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
-        HttpProxyFactory.setApplicationContext(applicationContext);
     }
 }

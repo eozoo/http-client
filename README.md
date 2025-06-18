@@ -18,5 +18,6 @@ HTTP客户端，参考Netflix Feign实现，使用的Apache Httpclient进行调�
 </dependency>
 ```
 
-- 使用说明：[wiki](https://github.com/cowave5/http-client/wiki/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
-- 问题建议：[issues](https://github.com/cowave5/http-client/issues)
+- [使用文档](https://eolist.github.io/2021/05/05/20210505)
+- [实现说明](https://eolist.github.io/2021/05/03/20210503)
+- [问题建议](https://github.com/cowave5/http-client/issues)

@@ -26,41 +26,41 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Component
 public @interface HttpClient {
 
-	@AliasFor(attribute = "url")
-	String value() default "";
+    @AliasFor(attribute = "url")
+    String value() default "";
 
-	@AliasFor(attribute = "value")
-	String url() default "";
+    @AliasFor(attribute = "value")
+    String url() default "";
 
-	String name() default "";
+    String name() default "";
 
-	int poolConnections() default 10;
+    int poolConnections() default 10;
 
-	int connectTimeout() default 10000;
+    int connectTimeout() default 10000;
 
-	String connectTimeoutStr() default "";
+    String connectTimeoutStr() default "";
 
-	int readTimeout() default 60000;
+    int readTimeout() default 60000;
 
-	String readTimeoutStr() default "";
+    String readTimeoutStr() default "";
 
-	int retryTimes() default 0;
+    int retryTimes() default 0;
 
-	String retryTimesStr() default "";
+    String retryTimesStr() default "";
 
-	int retryInterval() default 1000;
+    int retryInterval() default 1000;
 
-	String retryIntervalStr() default "";
+    String retryIntervalStr() default "";
 
-	Class<?> encoder() default JacksonEncoder.class;
+    Class<?> encoder() default JacksonEncoder.class;
 
-	Class<?> decoder() default JacksonDecoder.class;
+    Class<?> decoder() default JacksonDecoder.class;
 
-	Class<? extends SSLSocketFactory> sslSocketFactory() default NoopTlsSocketFactory.class;
+    Class<? extends SSLSocketFactory> sslSocketFactory() default NoopTlsSocketFactory.class;
 
-	Class<? extends HostnameVerifier> hostnameVerifier() default NoopHostnameVerifier.class;
+    Class<? extends HostnameVerifier> hostnameVerifier() default NoopHostnameVerifier.class;
 
-	Level level() default Level.INFO;
+    Level level() default Level.INFO;
 
-	boolean ignoreError() default false;
+    boolean ignoreError() default false;
 }

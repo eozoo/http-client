@@ -128,6 +128,10 @@ public class HttpMethodInvoker implements MethodInvoker {
         } catch (Exception e) {
             log.error(">< {}ms {} {} {}", cost, e.getMessage(), method, url, e);
             return throwOrReturn(httpType, new HttpHintException("Remote failed", e));
+        } finally {
+            if(httpResponseTemplate.isShouldClose()){
+                httpResponseTemplate.close();
+            }
         }
     }
 
@@ -152,6 +156,7 @@ public class HttpMethodInvoker implements MethodInvoker {
             } else {
                 log.warn(">< {} {}ms {}, {}", status, cost, method, url);
             }
+            response.setShouldClose(false);
             return new HttpResponse<>(response.getRemoteHeaders(), response.getStatus(), response.getInputStream());
         }
 

@@ -25,25 +25,14 @@ import javax.net.ssl.SSLSocketFactory;
  * @author shanhuiming
  *
  */
-class HttpProxyFactory {
+public class HttpProxyFactory {
 
-    private static ApplicationContext applicationContext;
-
-    private static StringValueResolver valueResolver;
-
-    static void setApplicationContext(ApplicationContext applicationContext) {
-        HttpProxyFactory.applicationContext = applicationContext;
-    }
-
-    static void setStringValueResolver(StringValueResolver valueResolver) {
-        HttpProxyFactory.valueResolver = valueResolver;
-    }
-
-    static <T> T newProxy(Class<T> clazz, HttpClient httpClient) throws UnsupportedEncodingException {
-        int retryTimes = getInt(httpClient.retryTimes(), httpClient.retryTimesStr());
-        int retryInterval = getInt(httpClient.retryInterval(), httpClient.retryIntervalStr());
-        int connectTimeout = getInt(httpClient.connectTimeout(), httpClient.connectTimeoutStr());
-        int readTimeout = getInt(httpClient.readTimeout(), httpClient.readTimeoutStr());
+    public static <T> T newProxy(Class<T> clazz, HttpClient httpClient,
+                                 ApplicationContext applicationContext, StringValueResolver valueResolver) throws UnsupportedEncodingException {
+        int retryTimes = getInt(httpClient.retryTimes(), httpClient.retryTimesStr(), valueResolver);
+        int retryInterval = getInt(httpClient.retryInterval(), httpClient.retryIntervalStr(), valueResolver);
+        int connectTimeout = getInt(httpClient.connectTimeout(), httpClient.connectTimeoutStr(), valueResolver);
+        int readTimeout = getInt(httpClient.readTimeout(), httpClient.readTimeoutStr(), valueResolver);
         ProxyFactoryBuilder proxyFactoryBuilder = new ProxyFactoryBuilder(new Options(connectTimeout, readTimeout, retryTimes, retryInterval));
 
         String[] interceptors = applicationContext.getBeanNamesForType(HttpClientInterceptor.class);
@@ -79,7 +68,7 @@ class HttpProxyFactory {
         return proxyFactory.newProxy(proxyTarget);
     }
 
-    private static int getInt(int defaultValue, String regex) {
+    private static int getInt(int defaultValue, String regex, StringValueResolver valueResolver) {
         if (!StringUtils.hasText(regex)) {
             return defaultValue;
         }

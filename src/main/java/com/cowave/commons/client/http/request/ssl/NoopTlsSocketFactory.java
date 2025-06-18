@@ -19,11 +19,11 @@ public class NoopTlsSocketFactory extends SSLSocketFactory implements X509TrustM
     private final SSLSocketFactory sslSocket;
 
     public NoopTlsSocketFactory() throws Exception {
-		// 忽略证书
+        // 忽略证书
         TrustManager[] trustAllCertificates = new TrustManager[]{
             new X509TrustManager() {
                 public X509Certificate[] getAcceptedIssuers() {
-					// 接受所有证书
+                    // 接受所有证书
                     return null;
                 }
                 public void checkClientTrusted(X509Certificate[] certs, String authType) {
@@ -35,76 +35,76 @@ public class NoopTlsSocketFactory extends SSLSocketFactory implements X509TrustM
             }
         };
         SSLContext sslcontext = SSLContext.getInstance("TLS");
-		sslcontext.init(null, trustAllCertificates, new SecureRandom());
-		sslSocket = sslcontext.getSocketFactory();
-	}
+        sslcontext.init(null, trustAllCertificates, new SecureRandom());
+        sslSocket = sslcontext.getSocketFactory();
+    }
 
     @Override
-	public String[] getDefaultCipherSuites() {
-		return null;
-	}
+    public String[] getDefaultCipherSuites() {
+        return null;
+    }
 
-	@Override
-	public String[] getSupportedCipherSuites() {
-		return null;
-	}
+    @Override
+    public String[] getSupportedCipherSuites() {
+        return null;
+    }
 
-	@Override
-	public Socket createSocket(Socket s, String host, int port, boolean autoClose) throws IOException {
-		return sslSocket.createSocket(s, host, port, autoClose);
-	}
+    @Override
+    public Socket createSocket(Socket s, String host, int port, boolean autoClose) throws IOException {
+        return sslSocket.createSocket(s, host, port, autoClose);
+    }
 
-	@Override
-	public Socket createSocket(String host, int port) throws IOException {
-		return sslSocket.createSocket(host, port);
-	}
+    @Override
+    public Socket createSocket(String host, int port) throws IOException {
+        return sslSocket.createSocket(host, port);
+    }
 
-	@Override
-	public Socket createSocket(InetAddress host, int port) throws IOException {
-		return sslSocket.createSocket(host, port);
-	}
+    @Override
+    public Socket createSocket(InetAddress host, int port) throws IOException {
+        return sslSocket.createSocket(host, port);
+    }
 
-	@Override
-	public Socket createSocket(String host, int port, InetAddress localHost, int localPort) throws IOException {
-		return sslSocket.createSocket(host, port, localHost, localPort);
-	}
+    @Override
+    public Socket createSocket(String host, int port, InetAddress localHost, int localPort) throws IOException {
+        return sslSocket.createSocket(host, port, localHost, localPort);
+    }
 
-	@Override
-	public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException {
-		return sslSocket.createSocket(address, port, localAddress, localPort);
-	}
+    @Override
+    public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException {
+        return sslSocket.createSocket(address, port, localAddress, localPort);
+    }
 
-	@Override
-	public String[] getClientAliases(String keyType, Principal[] issuers) {
-		return null;
-	}
+    @Override
+    public String[] getClientAliases(String keyType, Principal[] issuers) {
+        return null;
+    }
 
-	@Override
-	public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
-		return null;
-	}
+    @Override
+    public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
+        return null;
+    }
 
-	@Override
-	public String[] getServerAliases(String keyType, Principal[] issuers) {
-		return null;
-	}
+    @Override
+    public String[] getServerAliases(String keyType, Principal[] issuers) {
+        return null;
+    }
 
-	@Override
-	public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
-		return null;
-	}
+    @Override
+    public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
+        return null;
+    }
 
-	@Override
-	public X509Certificate[] getCertificateChain(String alias) {
-		return null;
-	}
+    @Override
+    public X509Certificate[] getCertificateChain(String alias) {
+        return null;
+    }
 
-	@Override
-	public PrivateKey getPrivateKey(String alias) {
-		return null;
-	}
+    @Override
+    public PrivateKey getPrivateKey(String alias) {
+        return null;
+    }
 
-	@Override
+    @Override
     public void checkClientTrusted(X509Certificate[] paramArrayOfX509Certificate, String paramString) {
 
     }
