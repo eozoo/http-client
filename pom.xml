@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.cowave.commons</groupId>
+    <groupId>com.cowave</groupId>
     <artifactId>http-client</artifactId>
     <version>2.7.5</version>
     <packaging>jar</packaging>
@@ -29,6 +29,11 @@
         <connection>scm:git@github.com:cowave5/http-client.git</connection>
         <developerConnection>scm:git@github.com:cowave5/http-client.git</developerConnection>
     </scm>
+
+    <organization>
+        <name>Cowave</name>
+        <url>https://www.cowave.com/home</url>
+    </organization>
 
     <developers>
         <developer>
