@@ -4,7 +4,7 @@
 
     <groupId>com.cowave</groupId>
     <artifactId>http-client</artifactId>
-    <version>2.7.5</version>
+    <version>2.7.6</version>
     <packaging>jar</packaging>
 
     <name>http-client</name>
@@ -25,9 +25,9 @@
     </issueManagement>
 
     <scm>
-        <url>git@github.com:cowave5/http-client.git</url>
-        <connection>scm:git@github.com:cowave5/http-client.git</connection>
-        <developerConnection>scm:git@github.com:cowave5/http-client.git</developerConnection>
+        <url>https://github.com/cowave5/http-client</url>
+        <connection>scm:git:https://github.com/cowave5/http-client.git</connection>
+        <developerConnection>scm:git:git@github.com:cowave5/http-client.git</developerConnection>
     </scm>
 
     <organization>
