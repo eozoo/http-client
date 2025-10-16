@@ -2,14 +2,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.cowave</groupId>
+    <groupId>com.cowave.zoo</groupId>
     <artifactId>http-client</artifactId>
     <version>2.7.6</version>
     <packaging>jar</packaging>
 
     <name>http-client</name>
     <description>A simple http client</description>
-    <url>https://github.com/cowave5/http-client</url>
+    <url>https://github.com/eozoo/http-client</url>
 
     <licenses>
         <license>
@@ -21,24 +21,19 @@
 
     <issueManagement>
         <system>github</system>
-        <url>https://github.com/cowave5/http-client/issues</url>
+        <url>https://github.com/eozoo/http-client/issues</url>
     </issueManagement>
 
     <scm>
-        <url>https://github.com/cowave5/http-client</url>
-        <connection>scm:git:https://github.com/cowave5/http-client.git</connection>
-        <developerConnection>scm:git:git@github.com:cowave5/http-client.git</developerConnection>
+        <url>https://github.com/eozoo/http-client</url>
+        <connection>scm:git:https://github.com/eozoo/http-client.git</connection>
+        <developerConnection>scm:git:git@github.com:eozoo/http-client.git</developerConnection>
     </scm>
-
-    <organization>
-        <name>Cowave</name>
-        <url>https://www.cowave.com/home</url>
-    </organization>
 
     <developers>
         <developer>
             <name>shanhuiming</name>
-            <email>huiming.shan@cowave.com</email>
+            <email>shanhuiming1991@163.com</email>
         </developer>
     </developers>
 
