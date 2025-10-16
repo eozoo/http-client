@@ -2,14 +2,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.cowave</groupId>
+    <groupId>com.cowave.zoo</groupId>
     <artifactId>http-client</artifactId>
     <version>2.7.6</version>
     <packaging>jar</packaging>
 
     <name>http-client</name>
     <description>A simple http client</description>
-    <url>https://github.com/cowave5/http-client</url>
+    <url>https://github.com/eozoo/http-client</url>
 
     <licenses>
         <license>
@@ -21,24 +21,19 @@
 
     <issueManagement>
         <system>github</system>
-        <url>https://github.com/cowave5/http-client/issues</url>
+        <url>https://github.com/eozoo/http-client/issues</url>
     </issueManagement>
 
     <scm>
-        <url>https://github.com/cowave5/http-client</url>
-        <connection>scm:git:https://github.com/cowave5/http-client.git</connection>
-        <developerConnection>scm:git:git@github.com:cowave5/http-client.git</developerConnection>
+        <url>https://github.com/eozoo/http-client</url>
+        <connection>scm:git:https://github.com/eozoo/http-client.git</connection>
+        <developerConnection>scm:git:git@github.com:eozoo/http-client.git</developerConnection>
     </scm>
-
-    <organization>
-        <name>Cowave</name>
-        <url>https://www.cowave.com/home</url>
-    </organization>
 
     <developers>
         <developer>
             <name>shanhuiming</name>
-            <email>huiming.shan@cowave.com</email>
+            <email>shanhuiming1991@163.com</email>
         </developer>
     </developers>
 
@@ -67,6 +62,7 @@
                     <source>1.8</source>
                     <target>1.8</target>
                     <encoding>UTF-8</encoding>
+                    <parameters>true</parameters>
                 </configuration>
             </plugin>
             <plugin>
@@ -110,7 +106,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
+                <version>3.5.6</version>
             </plugin>
         </plugins>
     </build>
@@ -175,46 +171,40 @@
     </distributionManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-            <version>0.9.10</version>
-        </dependency>
         <!-- commons-lang3 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
+            <version>3.17.0</version>
         </dependency>
         <!-- commons-io -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.14.0</version>
+            <version>2.22.0</version>
         </dependency>
         <!-- commons-collections4 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
+            <version>4.6.0</version>
         </dependency>
-        <!-- httpclient -->
+        <!-- Apache HttpClient 5 -->
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.13</version>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.5.2</version>
         </dependency>
-        <!-- httpmime -->
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpmime</artifactId>
-            <version>4.5.13</version>
+            <groupId>org.apache.httpcomponents.core5</groupId>
+            <artifactId>httpcore5</artifactId>
+            <version>5.3.6</version>
         </dependency>
         <!-- commons-text -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.10.0</version>
+            <version>1.15.0</version>
         </dependency>
         <!-- transmittable-thread-local -->
         <dependency>
@@ -232,25 +222,32 @@
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-extension</artifactId>
-            <version>3.5.4.1</version>
+            <version>3.5.12</version>
         </dependency>
         <!-- provided -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.24</version>
+            <version>1.18.38</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>2.7.0</version>
+            <version>3.5.16</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.18</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- test -->
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>2.7.0</version>
+            <version>3.5.16</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

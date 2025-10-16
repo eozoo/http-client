@@ -28,6 +28,6 @@ jobs:
       uses: codecov/codecov-action@v5
       with:
         token: 25db9047-7c6d-461a-b63d-181a4749d6f2
-        slug: cowave5/http-client
+        slug: eozoo/http-client
         file: ${{ github.workspace }}/target/site/jacoco/jacoco.xml
 
