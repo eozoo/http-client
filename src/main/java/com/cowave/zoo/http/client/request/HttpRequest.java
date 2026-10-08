@@ -50,11 +50,12 @@ public class HttpRequest {
         this.hostUrl = copy.hostUrl;
     }
 
-    public HttpRequestTemplate requestTemplate(int retryTimes, int retryInterval, int connectTimeout, int readTimeout) {
+    public HttpRequestTemplate requestTemplate(int retryTimes, int retryInterval,
+                                               int connectTimeout, int readTimeout, int writeTimeout, int callTimeout) {
         Map<String, Collection<String>> safeCopy = new LinkedHashMap<>(headers);
         return new HttpRequestTemplate(method, url + queryLine(), body, charset,
                 Collections.unmodifiableMap(safeCopy),
-                connectTimeout, readTimeout, retryTimes, retryInterval,
+                connectTimeout, readTimeout, writeTimeout, callTimeout, retryTimes, retryInterval,
                 multiFile, multiFileName, multiForm);
     }
 
@@ -68,6 +69,10 @@ public class HttpRequest {
 
     void setMultiFile(InputStream multiFile) {
         this.multiFile = multiFile;
+    }
+
+    public InputStream getMultiFile() {
+        return multiFile;
     }
 
     void setMultiFileName(String multiFileName) {
@@ -564,7 +569,7 @@ public class HttpRequest {
             }
             Collection<String> values = new ArrayList<String>();
             for (String value : entry.getValue()) {
-                if (value.indexOf('{') == 0 && value.indexOf('}') == value.length() - 1) {
+                if (value != null && value.indexOf('{') == 0 && value.indexOf('}') == value.length() - 1) {
                     Object variableValue = unencoded.get(value.substring(1, value.length() - 1));
                     // only add non-null expressions
                     if (variableValue == null) {

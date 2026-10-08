@@ -103,8 +103,9 @@ public class HttpMethodMetaParserImpl implements HttpMethodMetaParser {
             Asserts.isTrue(headersOnType.length > 0,
                     "Headers annotation was empty on type " + targetType.getName());
 
-            Map<String, Collection<String>> headers = toMap(headersOnType);
-            headers.putAll(data.getHttpRequest().headers());
+            Map<String, Collection<String>> headers = new LinkedHashMap<>(data.getHttpRequest().headers());
+            // 子接口的同名请求头覆盖父接口配置
+            headers.putAll(toMap(headersOnType));
             data.getHttpRequest().headers(null); // to clear
             data.getHttpRequest().headers(headers);
         }
@@ -150,6 +151,8 @@ public class HttpMethodMetaParserImpl implements HttpMethodMetaParser {
         } else if (annotationType == HttpOptions.class) {
             HttpOptions httpOptions = (HttpOptions) methodAnnotation;
             metadata.setReadTimeout(httpOptions.readTimeout());
+            metadata.setWriteTimeout(httpOptions.writeTimeout());
+            metadata.setCallTimeout(httpOptions.callTimeout());
             metadata.setConnectTimeout(httpOptions.connectTimeout());
             metadata.setRetryTimes(httpOptions.retryTimes());
             metadata.setRetryInterval(httpOptions.retryInterval());
@@ -206,11 +209,12 @@ public class HttpMethodMetaParserImpl implements HttpMethodMetaParser {
         Map<String, Collection<String>> result = new LinkedHashMap<>(input.length);
         for (String header : input) {
             int colon = header.indexOf(':');
+            Asserts.isTrue(colon > 0, "Invalid HTTP header: " + header);
             String name = header.substring(0, colon);
             if (!result.containsKey(name)) {
                 result.put(name, new ArrayList<>(1));
             }
-            result.get(name).add(header.substring(colon + 2));
+            result.get(name).add(header.substring(colon + 1).trim());
         }
         return result;
     }

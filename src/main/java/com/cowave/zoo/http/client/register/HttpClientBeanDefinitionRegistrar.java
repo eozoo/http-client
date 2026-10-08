@@ -1,6 +1,7 @@
 package com.cowave.zoo.http.client.register;
 
 import com.cowave.zoo.http.client.annotation.HttpClient;
+import com.cowave.zoo.http.client.invoke.exec.OkHttpExecutorFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -30,9 +31,16 @@ public class HttpClientBeanDefinitionRegistrar implements ImportBeanDefinitionRe
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata meta, @NonNull BeanDefinitionRegistry registry) {
+        // 在spring中注册一个OkHttpExecutorFactory
+        String clientFactoryName = OkHttpExecutorFactory.class.getName();
+        if (!registry.containsBeanDefinition(clientFactoryName)) {
+            registry.registerBeanDefinition(clientFactoryName,
+                    BeanDefinitionBuilder.genericBeanDefinition(OkHttpExecutorFactory.class)
+                            .setAutowireMode(GenericBeanDefinition.AUTOWIRE_CONSTRUCTOR).getBeanDefinition());
+        }
+        // 寻找注册@HttpClient
         TreeSet<String> packageSet = new TreeSet<>();
         String[] beanNames = registry.getBeanDefinitionNames();
-
         // ImportBeanDefinitionRegistrar 的导入类通常就是启动类，直接纳入其所在包，
         // 避免注册阶段尚未完成时从 BeanDefinitionRegistry 中取不到启动类。
         try {
@@ -125,6 +133,8 @@ public class HttpClientBeanDefinitionRegistrar implements ImportBeanDefinitionRe
                     beanDefinition.setAutowireMode(GenericBeanDefinition.AUTOWIRE_BY_TYPE);
                     beanDefinition.getPropertyValues().add("targetClass", clazz);
                     beanDefinition.setBeanClass(HttpClientFactoryBean.class);
+                    // 降级实现也实现同一接口，按接口注入时优先使用HTTP代理
+                    beanDefinition.setPrimary(true);
                     registry.registerBeanDefinition(clazz.getSimpleName(), beanDefinition);
                 } catch (ClassNotFoundException e) {
                     throw new ApplicationContextException("", e);

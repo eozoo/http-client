@@ -27,17 +27,21 @@ public class ProxyTarget<T> {
     private final String url;
 
     public HttpRequestTemplate apply(HttpRequest httpRequest, String hostUrl,
-                                     int retryTimes, int retryInterval, int connectTimeout, int readTimeout) throws UnsupportedEncodingException {
+                                     int retryTimes, int retryInterval,
+                                     int connectTimeout, int readTimeout,
+                                     int writeTimeout, int callTimeout) throws UnsupportedEncodingException {
         if(StringUtils.hasText(hostUrl)){
             httpRequest.insert(0, hostUrl);
-            return httpRequest.requestTemplate(retryTimes, retryInterval, connectTimeout, readTimeout);
+            return httpRequest.requestTemplate(retryTimes, retryInterval, connectTimeout, readTimeout, writeTimeout, callTimeout);
         }else{
-            return apply(httpRequest, retryTimes, retryInterval, connectTimeout, readTimeout);
+            return apply(httpRequest, retryTimes, retryInterval, connectTimeout, readTimeout, writeTimeout, callTimeout);
         }
     }
 
     public HttpRequestTemplate apply(HttpRequest httpRequest,
-                                     int retryTimes, int retryInterval, int connectTimeout, int readTimeout) throws UnsupportedEncodingException {
+                                     int retryTimes, int retryInterval,
+                                     int connectTimeout, int readTimeout,
+                                     int writeTimeout, int callTimeout) throws UnsupportedEncodingException {
         String prasedName = "";
         if(StringUtils.hasText(name)){
             HttpServiceChooser serviceChooser = applicationContext.getBean(HttpServiceChooser.class);
@@ -52,12 +56,12 @@ public class ProxyTarget<T> {
         String parsed = prasedName + prasedUrl;
         if (httpRequest.url().indexOf("http") != 0) {
             if(parsed.indexOf("http") != 0){
-                log.error(">< Remote failed due to illegal url, {}", parsed);
+                log.error(">< Remote failed due to illegal url, {}", HttpRequestTemplate.logUrl(parsed));
                 throw new HttpHintException("Remote failed");
             }
             httpRequest.insert(0, parsed);
         }
-        return httpRequest.requestTemplate(retryTimes, retryInterval, connectTimeout, readTimeout);
+        return httpRequest.requestTemplate(retryTimes, retryInterval, connectTimeout, readTimeout, writeTimeout, callTimeout);
     }
 
     public Class<T> type() {

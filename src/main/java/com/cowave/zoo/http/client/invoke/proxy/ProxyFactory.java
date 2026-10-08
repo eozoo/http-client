@@ -1,5 +1,6 @@
 package com.cowave.zoo.http.client.invoke.proxy;
 
+import com.cowave.zoo.http.client.HttpFallback;
 import com.cowave.zoo.http.client.request.meta.HttpMethodMetaParser;
 
 import java.io.UnsupportedEncodingException;
@@ -19,8 +20,14 @@ public class ProxyFactory {
 
     private final HttpMethodInvokerFactory httpMethodInvokerFactory;
 
-    public ProxyFactory(HttpMethodInvokerFactory httpMethodInvokerFactory) {
+    private final Object fallback;
+
+    private final HttpFallback httpFallback;
+
+    public ProxyFactory(HttpMethodInvokerFactory httpMethodInvokerFactory, Object fallback, HttpFallback httpFallback) {
         this.httpMethodInvokerFactory = httpMethodInvokerFactory;
+        this.fallback = fallback;
+        this.httpFallback = httpFallback;
     }
 
     @SuppressWarnings("unchecked")
@@ -36,12 +43,15 @@ public class ProxyFactory {
             if (method.getDeclaringClass() == Object.class) {
                 // object方法不进行代理
             } else if (HttpMethodMetaParser.isDefault(method)) {
-                DefaultMethodInvoker handler = new DefaultMethodInvoker(method);
-                defaultProxyInvokerList.add(handler);
-                methodInvokeHandlerMap.put(method, handler);
+                DefaultMethodInvoker defaultInvoker = new DefaultMethodInvoker(method);
+                defaultProxyInvokerList.add(defaultInvoker);
+                methodInvokeHandlerMap.put(method, defaultInvoker);
             } else {
-                methodInvokeHandlerMap.put(
-                        method, httpProxyInvokerMap.get(HttpMethodMetaParser.methodKey(proxyTarget.type(), method)));
+                MethodInvoker httpInvoker = httpProxyInvokerMap.get(HttpMethodMetaParser.methodKey(proxyTarget.type(), method));
+                // 如果需要fallback，就对httpInvoker进行一下包装
+                methodInvokeHandlerMap.put(method,
+                        fallback == null && httpFallback == null ? httpInvoker
+                                : new FallbackMethodInvoker(httpInvoker, method, fallback, httpFallback, proxyTarget.type()));
             }
         }
 

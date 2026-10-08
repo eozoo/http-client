@@ -4,14 +4,12 @@ import com.cowave.zoo.http.client.response.HttpResponseTemplate;
 import com.cowave.zoo.http.client.response.Response;
 import com.cowave.zoo.http.client.asserts.HttpHintException;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.core.JsonParser;
 import lombok.extern.slf4j.Slf4j;
+import com.cowave.zoo.http.client.request.HttpRequestTemplate;
 import com.cowave.zoo.http.client.invoke.codec.HttpDecoder;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import static com.cowave.zoo.http.client.constants.HttpCode.SUCCESS;
@@ -36,44 +34,40 @@ public class ResponseDecoder implements HttpDecoder {
 
     @Override
     public Object decode(HttpResponseTemplate response, Type type, String url, long cost, int status) throws Exception {
+        String logUrl = HttpRequestTemplate.logUrl(url);
         if (response.getInputStream() == null) {
             if(log.isInfoEnabled()){
-                log.info(">< {} {}ms {}", status, cost, url);
+                log.info(">< {} {}ms {}", status, cost, logUrl);
             }
             return null;
         }
 
-        Reader reader = new InputStreamReader(response.getInputStream(), StandardCharsets.UTF_8);
-        if (!reader.markSupported()) {
-            reader = new BufferedReader(reader, 1);
+        Response<?> resp;
+        // 与JacksonDecoder保持一致，空响应及纯空白响应不进行对象映射
+        try (JsonParser parser = mapper.getFactory().createParser(response.getInputStream())) {
+            parser.disable(JsonParser.Feature.AUTO_CLOSE_SOURCE);
+            resp = parser.nextToken() == null ? null : mapper.readValue(parser, Response.class);
         }
-
-        // Read the first byte to see if we have any data
-        reader.mark(1);
-        // Eagerly returning null avoids "No content to map due to end-of-input"
-        if (reader.read() == -1) {
+        if (resp == null) {
             if(log.isInfoEnabled()){
-                log.info(">< {} {}ms {}", status, cost, url);
+                log.info(">< {} {}ms {}", status, cost, logUrl);
             }
             return null;
         }
-        reader.reset();
-
-        Response<?> resp = mapper.readValue(reader, Response.class);
         if(!Objects.equals(SUCCESS.getCode(), resp.getCode())){
-            log.error(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
+            log.error(">< {} {}ms {} {code={}, msg={}}", status, cost, logUrl, resp.getCode(), resp.getMsg());
             throw new HttpHintException(status, resp.getCode(), resp.getMsg());
         }
 
-        if (void.class == type) {
+        if (void.class == type || Void.class == type) {
             if(log.isInfoEnabled()){
-                log.info(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
+                log.info(">< {} {}ms {} {code={}, msg={}}", status, cost, logUrl, resp.getCode(), resp.getMsg());
             }
             return null;
         }
 
         if(log.isInfoEnabled()){
-            log.info(">< {} {}ms {} {code={}, msg={}}", status, cost, url, resp.getCode(), resp.getMsg());
+            log.info(">< {} {}ms {} {code={}, msg={}}", status, cost, logUrl, resp.getCode(), resp.getMsg());
         }
         String data = mapper.writeValueAsString(resp.getData());
         return mapper.readValue(data, mapper.constructType(type));

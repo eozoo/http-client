@@ -31,7 +31,7 @@ public class BodyRequestFactory extends HttpRequestFactory {
 
         // body请求，默认设置下application/json
         Map<String, Collection<String>> headers = httpRequest.headers();
-        if(!headers.containsKey(Content_Type)){
+        if (headers.keySet().stream().noneMatch(Content_Type::equalsIgnoreCase)) {
             httpRequest.header(Content_Type, "application/json");
         }
         return super.resolve(argv, httpRequest, variables, multiParams);

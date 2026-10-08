@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 public class Options {
     private final int connectTimeout;
     private final int readTimeout;
+    private final int writeTimeout;
+    private final int callTimeout;
     private final int retryTimes;
     private final int retryInterval;
 }

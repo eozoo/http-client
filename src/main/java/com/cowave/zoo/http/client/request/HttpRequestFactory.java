@@ -44,17 +44,27 @@ public class HttpRequestFactory {
             multiParamMap.put(entry.getValue(), paramValue);
         }
 
-        // 请求模板
-        HttpRequest resolvedRequest = resolve(args, httpRequest, paramMap, multiParamMap);
-
-        if (metadata.getParamMapIndex() != null) {
-            addParamMapParameters(args, resolvedRequest);
+        try {
+            // 请求模板
+            HttpRequest resolvedRequest = resolve(args, httpRequest, paramMap, multiParamMap);
+            if (metadata.getParamMapIndex() != null) {
+                addParamMapParameters(args, resolvedRequest);
+            }
+            if (metadata.getHeaderMapIndex() != null) {
+                addHeaderMapHeaders(args, resolvedRequest);
+            }
+            return resolvedRequest;
+        } catch (Exception exception) {
+            // 请求构建失败时尚未进入调用层，已打开的上传流在这里释放
+            if (httpRequest.getMultiFile() != null) {
+                try {
+                    httpRequest.getMultiFile().close();
+                } catch (Exception closeException) {
+                    exception.addSuppressed(closeException);
+                }
+            }
+            throw exception;
         }
-
-        if (metadata.getHeaderMapIndex() != null) {
-            addHeaderMapHeaders(args, resolvedRequest);
-        }
-        return resolvedRequest;
     }
 
     @SuppressWarnings("rawtypes")

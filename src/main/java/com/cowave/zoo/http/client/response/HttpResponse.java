@@ -95,17 +95,17 @@ public class HttpResponse<T> extends ResponseEntity<T> {
     }
 
     /**
-     * status == 200
+     * HTTP状态码为2xx
      */
     public boolean isSuccess(){
-        return getStatusCodeValue() == 200;
+        return status >= 200 && status < 300;
     }
 
     /**
-     * status != 200
+     * HTTP状态码非2xx
      */
     public boolean isFailed(){
-        return getStatusCodeValue() != 200;
+        return !isSuccess();
     }
 
     /**
@@ -136,16 +136,6 @@ public class HttpResponse<T> extends ResponseEntity<T> {
      */
     public static <V> HttpResponse<V> success(){
         return new HttpResponse<>(SUCCESS, null, null);
-    }
-
-    /**
-     * status=200, body=null
-     */
-    public static <V> HttpResponse<V> success(Action action) throws Exception {
-        if (action != null) {
-            action.exec();
-        }
-        return success();
     }
 
     /**

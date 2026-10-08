@@ -2,7 +2,6 @@ package com.cowave.zoo.http.client.invoke.proxy;
 
 import com.cowave.zoo.http.client.request.MultipartRequestFactory;
 import lombok.RequiredArgsConstructor;
-import com.cowave.zoo.http.client.HttpExceptionHandler;
 import com.cowave.zoo.http.client.HttpClientInterceptor;
 import com.cowave.zoo.http.client.invoke.codec.HttpDecoder;
 import com.cowave.zoo.http.client.invoke.codec.HttpEncoder;
@@ -17,6 +16,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -30,8 +30,9 @@ public class HttpMethodInvokerFactory {
     private final HttpEncoder encoder;
     private final HttpDecoder decoder;
     private final Options options;
+    private final Set<Integer> retryForStatus;
+    private final List<Class<? extends Exception>> retryForExceptions;
     private final List<HttpClientInterceptor> httpClientInterceptors;
-    private final HttpExceptionHandler exceptionHandler;
 
     private final boolean ignoreError;
 
@@ -56,7 +57,8 @@ public class HttpMethodInvokerFactory {
             // <methodKey, MethodHandler>
             result.put(meta.getMethodKey(),
                     new HttpMethodInvoker(proxyTarget, meta, httpRequestFactory,
-                            httpExecutor, httpClientInterceptors, options, decoder, ignoreError, exceptionHandler));
+                            httpExecutor, httpClientInterceptors, options, retryForStatus,
+                            retryForExceptions, decoder, ignoreError));
         }
         return result;
     }

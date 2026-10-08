@@ -34,6 +34,8 @@ public class HttpMethodMeta {
     private transient Type returnType;
     private int connectTimeout = -1;
     private int readTimeout = -1;
-    private int retryTimes;
-    private int retryInterval;
+    private int writeTimeout = -1;
+    private int callTimeout = -1;
+    private int retryTimes = -1;
+    private int retryInterval = -1;
 }

@@ -1,6 +1,8 @@
 package com.cowave.zoo.http.client.annotation;
 
 import org.springframework.context.annotation.Import;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import com.cowave.zoo.http.client.HttpClientProperties;
 import com.cowave.zoo.http.client.register.HttpClientBeanDefinitionRegistrar;
 
 import java.lang.annotation.*;
@@ -17,6 +19,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Documented
 @Import(HttpClientBeanDefinitionRegistrar.class)
+@EnableConfigurationProperties(HttpClientProperties.class)
 public @interface EnableHttpClient {
 
 }

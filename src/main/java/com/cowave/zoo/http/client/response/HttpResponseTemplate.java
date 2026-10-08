@@ -3,7 +3,6 @@ package com.cowave.zoo.http.client.response;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.apache.hc.core5.http.ClassicHttpResponse;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -20,12 +19,12 @@ import java.util.Map;
 @Setter
 @RequiredArgsConstructor
 public class HttpResponseTemplate implements Closeable {
-    private final ClassicHttpResponse httpResponse;
+    private final Closeable httpResponse;
     private final int status;
     private final Map<String, List<String>> remoteHeaders;
     private final String reason;
     private final InputStream inputStream;
-    private final Integer length;
+    private final Long length;
     private boolean shouldClose = true;
 
     @Override

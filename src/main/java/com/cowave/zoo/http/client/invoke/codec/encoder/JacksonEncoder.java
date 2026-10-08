@@ -17,6 +17,7 @@ public class JacksonEncoder implements HttpEncoder {
     public static final ObjectMapper MAPPER = new ObjectMapper();
 
     static {
+        MAPPER.findAndRegisterModules();
         MAPPER.setTimeZone(TimeZone.getDefault());
         MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         MAPPER.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
